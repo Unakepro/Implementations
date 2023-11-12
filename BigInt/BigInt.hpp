@@ -6,7 +6,7 @@
 
 class BigInt {
 	std::string digits="0";
-	bool sign=0;
+	bool sign = 0;
 
 public:
 	BigInt(long long x): sign(std::signbit(x)) {
@@ -24,9 +24,9 @@ public:
 		return sign;
 	}
 
-	//const std::string toString() {
-	//	return sign + digits;
-	//}
+	const std::string toString() {
+		return (sign ? '-': '+') + digits;
+	}
 
 	BigInt& operator+=(const BigInt&);
 	BigInt& operator-=(const BigInt&);
@@ -381,20 +381,21 @@ std::ostream& operator<<(std::ostream& out, const BigInt& obj) {
 	
 	return out;
 }
-/*
+
 std::istream& operator>>(std::istream& in, BigInt& obj) {
+
 	std::string str;
 	
 	in >> str;
 	
 	if(str[0] == '-') {
 		obj.sign = 1;
+		obj.digits = str.substr(1);	
 	}
-	
-
-	for(int i=str.size()-1;i>=obj.sign;--i) {
-		obj.digits.push_back(str[i] - '0');
+	else {
+		obj.sign = 0;
+		obj.digits = str;
 	}
 
 	return in;
-}*/
+}
