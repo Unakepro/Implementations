@@ -2,8 +2,8 @@
 
 
 int main() {
-    BigInt x(99999);
-    BigInt y(99998);
+    BigInt x(-99999);
+    BigInt y(-99999);
 
     std::cout << x << std::endl;
 	//std::cout << x.toString() << std::endl;
@@ -16,14 +16,15 @@ int main() {
 
     //std::cout << x % x << std::endl;
 
-    //std::cout << (x == y) << std::endl;
-    //std::cout << (x != y) << std::endl;
-
-
     std::cout << (x > y) << std::endl;
-    //std::cout << (x < y) << std::endl;
-    //std::cout << (x >= y) << std::endl;
-    //std::cout << (x <= y) << std::endl;   
+    std::cout << (x < y) << std::endl;
+    std::cout << (x >= y) << std::endl;
+    std::cout << (x <= y) << std::endl;   
+
+    std::cout << (x == y) << std::endl;
+    std::cout << (x != y) << std::endl;
+
+	std::cout << (-x) << std::endl;
 
     //std::cout << (x-=y) << std::endl;
 

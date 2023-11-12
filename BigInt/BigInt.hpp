@@ -47,7 +47,7 @@ public:
 	BigInt operator++(int); 
 	BigInt operator--(int);
 
-	BigInt& operator-();
+	BigInt operator-();
 
 
 	char& operator[](int);
@@ -104,35 +104,35 @@ bool BigInt::operator>(const BigInt& obj) const {
 	}
 	return false;
 }
-/*
-bool operator<(const BigInt& obj, const BigInt& obj1) {
-	return obj1 > obj;
+
+bool BigInt::operator<(const BigInt& obj) const {
+	return obj > (*this);
 }
 
 bool BigInt::operator==(const BigInt& obj) const {	
 	return !((*this) > obj || (*this) < obj);
 }
 
-bool BigInt::operator!=(const BigInt& obj) {
+bool BigInt::operator!=(const BigInt& obj) const {
 	return !((*this)==obj);
 }
 
-bool BigInt::operator>=(const BigInt& obj) {
-	return ((*this) == obj || (*this) > obj);
+bool BigInt::operator>=(const BigInt& obj) const {
+	return ((*this) > obj || (*this) == obj);
 }
 
 
-bool BigInt::operator<=(const BigInt& obj) {
-    return ((*this)==obj || (*this)<obj);
+bool BigInt::operator<=(const BigInt& obj) const {
+    return ((*this) < obj || (*this) == obj);
 }
 
 
-BigInt& BigInt::operator-() {
+BigInt BigInt::operator-() {
 	sign = sign ^ 1;
 	return *this;
 }
 
-
+/*
 
 BigInt& BigInt::operator+=(const BigInt& obj) {
 
