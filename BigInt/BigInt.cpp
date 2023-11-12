@@ -2,11 +2,11 @@
 
 
 int main() {
-    BigInt x(-99999);
-    BigInt y;
+    BigInt x(99999);
+    BigInt y(99998);
 
     std::cout << x << std::endl;
-	std::cout << x.toString() << std::endl;
+	//std::cout << x.toString() << std::endl;
     //std::cin >> y;
     //std::cout << y << std::endl;
 
@@ -20,7 +20,7 @@ int main() {
     //std::cout << (x != y) << std::endl;
 
 
-    //std::cout << (x > y) << std::endl;
+    std::cout << (x > y) << std::endl;
     //std::cout << (x < y) << std::endl;
     //std::cout << (x >= y) << std::endl;
     //std::cout << (x <= y) << std::endl;   

@@ -34,12 +34,14 @@ public:
 	BigInt& operator/=(const BigInt&);
 
 
-	bool operator==(const BigInt&) const;
-	bool operator!=(const BigInt&) const;
+	bool operator>(const BigInt&) const;
+	bool operator<(const BigInt&) const;
 	bool operator>=(const BigInt&) const;
 	bool operator<=(const BigInt&) const;
-
-
+	
+	bool operator==(const BigInt&) const;
+	bool operator!=(const BigInt&) const;
+	
 	BigInt& operator++();
 	BigInt& operator--();
 	BigInt operator++(int); 
@@ -48,8 +50,8 @@ public:
 	BigInt& operator-();
 
 
-	int& operator[](int);
-	const int& operator[](int) const;
+	char& operator[](int);
+	const char& operator[](int) const;
 	
 
 	friend std::ostream& operator<<(std::ostream& out, const BigInt& obj);
@@ -67,43 +69,42 @@ void swap_values(int& x, int& y) {
 		x = y;
 		y = tmp;
 }
-
+*/
 
 bool abs_compare(const BigInt& obj, const BigInt& obj1) {	
-	
+
+	if(obj.size() > obj1.size()) {
+    	return true;
+    }
+
 	if(obj.size() == obj1.size()) { 
-		for(int i=0;i<obj.size();++i) {
-            if(obj[i] > obj1[i]) {
+		for(size_t i=0; i < obj.size(); ++i) {
+            if((obj[i]-'0') > (obj1[i]-'0')) {
                 return true;
             }
         }
         return false;
     }
-
-
-    if(obj.size() > obj1.size()) {
-        return true;
-    }
-    return false;
-}
-
-
-bool operator>(const BigInt& obj, const BigInt& obj1) {
-
-    if(obj.sign == obj1.sign) {
-		if(obj.sign == 0) {
-			return abs_compare(obj, obj1);			
-		}
-		else {
-			return abs_compare(obj1, obj);
-		}
-	}
-	if(obj.sign == 0) {
-		return true;
-	}
 	return false;
 }
 
+bool BigInt::operator>(const BigInt& obj) const {
+
+    if(this->sign == 0 && obj.sign == 1) {
+		return true;
+	}
+	
+	else if(this->sign == obj.sign) {
+		if(this->sign == 0) {
+			return abs_compare(*this, obj);	
+		}
+		else {
+			return abs_compare(obj, *this);
+		}
+	}
+	return false;
+}
+/*
 bool operator<(const BigInt& obj, const BigInt& obj1) {
 	return obj1 > obj;
 }
@@ -361,16 +362,16 @@ BigInt& BigInt::operator--() {
 
 
 
-
-int& BigInt::operator[](int x) {
-	return digits[x];
-}
-
-const int& BigInt::operator[](int x) const {
-	return digits[x];
-}
-
 */
+
+char& BigInt::operator[](int x) {
+	return digits[x];
+}
+
+const char& BigInt::operator[](int x) const {
+	return digits[x];
+}
+
 std::ostream& operator<<(std::ostream& out, const BigInt& obj) {
 	
 	if(obj.sign == 1) {
