@@ -1,18 +1,23 @@
+#ifndef BIGINT
+#define BIGINT
+
+
 #include <iostream>
 #include <string>
 #include <cmath>
-
-
+#include <algorithm>
 
 class BigInt {
 	std::string digits="0";
 	bool sign = 0;
 
 public:
-	BigInt(long long x): sign(std::signbit(x)) {
+	 BigInt(long long x): sign(std::signbit(x)) {
 		x = llabs(x);
 		digits = std::to_string(x);
-	}	
+	}
+
+    BigInt(const BigInt& obj): digits(obj.digits), sign(obj.sign) {}
 
 	BigInt() = default;
 
@@ -62,16 +67,7 @@ public:
 	}	
 
 };
- 
-/*
-void swap_values(int& x, int& y) {
-		int tmp = x;
-		x = y;
-		y = tmp;
-}
-*/
-
-bool abs_compare(const BigInt& obj, const BigInt& obj1) {	
+bool abs_compare(const BigInt& obj, const BigInt& obj1) {
 
 	if(obj.size() > obj1.size()) {
     	return true;
@@ -94,7 +90,7 @@ bool BigInt::operator>(const BigInt& obj) const {
 		return true;
 	}
 	
-	else if(this->sign == obj.sign) {
+	if(this->sign == obj.sign) {
 		if(this->sign == 0) {
 			return abs_compare(*this, obj);	
 		}
@@ -128,116 +124,57 @@ bool BigInt::operator<=(const BigInt& obj) const {
 
 
 BigInt BigInt::operator-() {
-	sign = sign ^ 1;
+	sign = !sign;
 	return *this;
 }
 
-/*
+
 
 BigInt& BigInt::operator+=(const BigInt& obj) {
 
-	int len = digits.size();
-	int len_obj = obj.size(); 
+	BigInt copy(obj);
+
+    if((*this).digits.size() < copy.digits.size()) {
+		std::swap(digits, copy.digits);
+    }
+
+    size_t size_str = digits.size();
+    size_t cpy_size = copy.digits.size();
 
 
 	int carry=0;
 	if(sign == obj.sign) {
-		if(len > len_obj) {
-	
-	
-        	for(int i=0;i<len_obj;++i) {
-				carry = digits[i] + obj.digits[i]+carry;
-				digits[i] = carry%10;
-				carry /= 10;				
-   			}
+		for(size_t i = 0; i < cpy_size; ++i) {
 
-			for(int i=len_obj;i<len;++i) {
-				carry = digits[i] + carry;
-				digits[i] = carry%10;
-				carry /= 10;
-			}
+			carry += digits[size_str-1-i]-'0' + copy.digits[cpy_size-i-1]-'0';
+            digits[size_str-1-i] = static_cast<char>(('0' + (carry % 10)));
 
-			if(carry != 0) {
-				digits.push_back(carry);
-			}
-		}
-		
-		else {
-        		for(int i=0;i<len;++i) {
-					carry = digits[i] + obj.digits[i] + carry;
-					digits[i] = carry%10;
-					carry /= 10;
-				}
-			 
-				for(int i=len;i<len_obj;++i) {
-					carry = obj.digits[i] + carry;
-					digits.push_back(carry%10);
-					carry /= 10;
-        		}	
-				if(carry != 0) {
-					digits.push_back(carry);
-				} 
-			}
-	}
-	
-	else {
-	
-		if(*this == obj) {
-			*this = 0;
-			return *this;
-		}
-
-		std::vector<int> tmp;
-		tmp = obj.digits;
-
-
-		if(abs_compare(obj, (*this))) {
-			digits.swap(tmp);			
-		
-			swap_values(len, len_obj);
-			sign = obj.sign;	
+			carry /= 10;
 		}	
-	
-				for(int i=0;i<len_obj;++i) {
-	
-					int x = i+1;
-					while(digits[i]<tmp[i]) {
-						
-						if(digits[x] > 0) {	
 
+		for(size_t j = cpy_size; j < size_str; ++j) {
+			carry += digits[size_str-1-j]-'0';
+			
+			digits[size_str-1-j] = static_cast<char>(('0' + (carry % 10)));
 
-							digits[x] = digits[x]-1;
-							digits[i] += 10;
+			carry /= 10;
+		}
 
-							for(int j=i+1;j<x;++j) {
-								digits[j] = 9;
-							}
-						}
-						++x;
-				}
-	
-					digits[i] = digits[i] - tmp[i];
-			}
-
-		 
-			for(int i=len-1;i>0;--i) {
-
-						if(digits[i] == 0) {
-							digits.pop_back();
-						}
-						
-						else {
-							 break;
-						}
-			}	
+		if(carry) {
+			digits = static_cast<char>(carry+'0') + digits;
 		
-	
-
+		}
 	}
+    else {
+
+    }
+
+
 	return *this;
 					
 }
 
+/*
 BigInt& BigInt::operator*=(const BigInt& obj) {
 	
 	BigInt copy = obj;
@@ -306,12 +243,13 @@ BigInt& BigInt::operator-=(const BigInt& obj) {
 	return (-*this);
 }
 
+*/
 BigInt operator+(const BigInt& obj, const BigInt& obj1) {
 	BigInt copy = obj;
 	copy += obj1;
 	return copy;
 }
-
+/*
 BigInt operator-(const BigInt& obj, const BigInt& obj1) {
     BigInt copy = obj;
 	copy -= obj1;
@@ -389,13 +327,15 @@ std::istream& operator>>(std::istream& in, BigInt& obj) {
 	in >> str;
 	
 	if(str[0] == '-') {
-		obj.sign = 1;
+		obj.sign = true;
 		obj.digits = str.substr(1);	
 	}
 	else {
-		obj.sign = 0;
+		obj.sign = false;
 		obj.digits = str;
 	}
 
 	return in;
 }
+
+#endif
