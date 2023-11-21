@@ -33,6 +33,15 @@ public:
 		return (sign ? '-': '+') + digits;
 	}
 
+	bool is_zero() {
+    	for(int i=digits.size()-1; i >= 0; --i) {
+        	if(digits[i]-'0' != 0) {
+            	return false;
+        	}
+    	}
+   		return true;
+	}
+
 	BigInt& operator+=(const BigInt&);
 	BigInt& operator-=(const BigInt&);
 	BigInt& operator*=(const BigInt&);
@@ -68,14 +77,6 @@ public:
 
 };
 
-bool is_zero(std::string& obj) {
-    for(int i=obj.size()-1; i >= 0; --i) {
-        if(obj[i]-'0' != 0) {
-            return false;
-        }
-    }
-    return true;
-}
 
 bool abs_compare(const BigInt& obj, const BigInt& obj1) {
 
@@ -204,7 +205,7 @@ BigInt& BigInt::operator+=(const BigInt& obj) {
         }
 
 
-        if(is_zero(digits)) {
+        if(is_zero()) {
             sign = false;
         }
 
