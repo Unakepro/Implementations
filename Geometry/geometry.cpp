@@ -4,13 +4,15 @@
 #include "geometry.hpp"
 
 
-
 int main() {
 	Point p1(-3, -2);
 	Point p2(-1, 4);
 	Point p3(6, 1);
 	Point p4(3, 10);
 	Point p5(-4, 9);
+
+	Line ln1(1, 0);
+	Line ln2(1, 0);
 
 	Line ln1(1, 0);
 	Line ln2(1, 0);
