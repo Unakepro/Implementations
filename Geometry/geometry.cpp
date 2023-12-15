@@ -13,6 +13,7 @@ struct Point {
 
 	bool operator==(const Point&);
 	bool operator!=(const Point&);
+
 };
 
 class Line {
@@ -23,6 +24,18 @@ public:
 	Line(double slope = 1, double intercept = 1): slope(slope), intercept(intercept) {}
 	Line(const Point& p1, const Point& p2): slope(calc_slope(p1, p2)), intercept(calc_intercept(slope, p1)) {}
 	Line(double slope, const Point& p): slope(slope), intercept(calc_intercept(slope, p)) {}
+
+
+	double neg_reciprocal() {
+		
+
+		return -1/slope;
+	}
+
+	double get_slope() {
+		return slope;
+	}
+	
 
 	bool operator==(const Line&);
 	bool operator!=(const Line&);
@@ -38,6 +51,8 @@ private:
 		return p.y-(p.x*slope);	
 	}
 
+
+	friend std::ostream& operator<<(std::ostream&, const Line&);
 };
 
 
@@ -131,6 +146,44 @@ public:
 
 };
 
+class Triangle: public Polygon {
+	
+public:
+
+	Triangle(const Point& p1, const Point& p2, const Point& p3): Polygon{p1, p2, p3} {} 
+	
+
+	Point centroid() {
+		double x;
+		double y;
+
+		x = (vertices[0].x + vertices[1].x + vertices[2].x)/3;
+		y = (vertices[0].y + vertices[1].y + vertices[2].y)/3;
+
+		return Point(x, y);
+	}	
+
+
+	Point orthocenter() {
+		Line side1(vertices[0], vertices[1]);
+		Line side2(vertices[1], vertices[2]);
+
+		double b1;
+		double b2;
+
+		b1 = vertices[2].y - (vertices[2].x*side1.neg_reciprocal());
+		b2 = vertices[0].y - (vertices[0].x*side2.neg_reciprocal());
+
+		Point ort;
+
+		ort.x = (b2-b1)/(side1.neg_reciprocal()-side2.neg_reciprocal()); 
+		ort.y = side1.neg_reciprocal() * ort.x + b1;
+		
+		return ort;
+	}
+
+};
+
 
 bool Point::operator==(const Point& obj) {
 	return x == obj.x && y == obj.y;
@@ -148,7 +201,19 @@ bool Line::operator!=(const Line& obj) {
 	return !(*this == obj);
 }
 
+<<<<<<< HEAD
 >>>>>>> 300b056 (added area/perimeter/isConvex)
+=======
+std::ostream& operator<<(std::ostream& out, const Point& obj) {
+	out << obj.x << ' ' << obj.y << std::endl;
+	return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const Line& obj) {
+	out << obj.slope << ' ' << obj.intercept << std::endl;
+	return out;
+}
+>>>>>>> 6afce01 (added centroid and ort center for triangle)
 
 
 int main() {
@@ -179,6 +244,7 @@ int main() {
 	std::cout << "Is convex: " << pl1.isConvex() << std::endl;
 	
 	for(auto p: pl1.getVertices()) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 		std::cout << p << '\t' << std::endl;	
 	}
@@ -244,4 +310,17 @@ int main() {
 	}
 
 >>>>>>> 300b056 (added area/perimeter/isConvex)
+=======
+		std::cout << p << '\t' << std::endl;	
+	}
+
+	Triangle tr1(p1, p2, p3);
+	std::cout << "Perimeter of trianle is " << tr1.perimeter() << std::endl;
+	std::cout << "Area of triangle is " << tr1.area() << std::endl;
+	std::cout << "Centroid of triangle is " << tr1.centroid() << std::endl;
+
+	std::cout << "Orthocenter of triangle is " << tr1.orthocenter() << std::endl;
+	
+	
+>>>>>>> 6afce01 (added centroid and ort center for triangle)
 }
