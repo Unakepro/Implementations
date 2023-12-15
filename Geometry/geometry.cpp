@@ -1,5 +1,154 @@
 #include <iostream>
 #include <vector>
+<<<<<<< HEAD
+=======
+#include <cmath> 
+
+
+struct Point {
+	double x;
+	double y;
+
+	Point(double x_c = 0, double y_c = 0): x(x_c), y(y_c) {}
+
+	bool operator==(const Point&);
+	bool operator!=(const Point&);
+};
+
+class Line {
+	double slope; 
+	double intercept;
+
+public:
+	Line(double slope = 1, double intercept = 1): slope(slope), intercept(intercept) {}
+	Line(const Point& p1, const Point& p2): slope(calc_slope(p1, p2)), intercept(calc_intercept(slope, p1)) {}
+	Line(double slope, const Point& p): slope(slope), intercept(calc_intercept(slope, p)) {}
+
+	bool operator==(const Line&);
+	bool operator!=(const Line&);
+
+private:
+	
+	double calc_slope(const Point& p1, const Point& p2) {
+		return (p2.y-p1.y) / (p2.x - p1.x);
+	
+	}
+
+	double calc_intercept(double slope, const Point& p) {
+		return p.y-(p.x*slope);	
+	}
+
+};
+
+
+class Shape {
+
+protected:
+	virtual double perimeter() = 0;
+	virtual double area() = 0;
+	virtual int verticesCount() = 0;
+	virtual const std::vector<Point> getVertices() = 0;	
+	
+
+};
+
+class Polygon: public Shape {
+protected:	
+	std::vector<Point> vertices;	
+
+public:
+
+	Polygon(std::vector<Point> ver): vertices(ver) {} 
+	
+	Polygon(std::initializer_list<Point> lst) {
+		vertices.insert(vertices.end(), lst.begin(), lst.end());
+	}
+	
+
+	bool isConvex() {
+		int size = verticesCount();
+		bool sign = true;		
+
+		int vert; 
+
+		
+		vert = ((vertices[size-1].x - vertices[size-2].x) * (vertices[0].y - vertices[size-1].y)) -
+		((vertices[size-1].y - vertices[size-2].y) * (vertices[0].x - vertices[size-1].x)); 
+		
+		sign = vert > 0 ? true: false;
+
+		vert = ((vertices[0].x - vertices[size-1].x) * (vertices[1].y - vertices[0].y)) -
+		((vertices[0].y - vertices[size-1].y) * (vertices[1].x - vertices[0].x));
+		
+		for(int i = 0; i < size-2; ++i) {
+		
+
+			if(!((vert > 0 && sign == true) || (vert < 0 && sign == false))) {
+				return false;
+			}
+
+			vert = ((vertices[i+1].x - vertices[i].x) * (vertices[i+2].y - vertices[i+1].y)) -
+		 	((vertices[i+1].y - vertices[i].y) * (vertices[i+2].x - vertices[i+1].x));
+	
+		
+		}	
+	
+		return true;
+	}
+
+
+	int verticesCount() override {
+		return vertices.size();
+	}
+	
+	const std::vector<Point> getVertices() override {
+		return vertices;
+	}
+
+
+	double perimeter() override {
+		double sum = 0;
+		for(int i = 0; i < verticesCount()-1; ++i) {
+			sum += sqrt((pow(vertices[i+1].x - vertices[i].x, 2)) + (pow(vertices[i+1].y - vertices[i].y, 2)));
+		}
+
+		sum += sqrt((pow(vertices[verticesCount()-1].x - vertices[0].x, 2)) + (pow(vertices[verticesCount()-1].y - vertices[0].y, 2)));
+		return sum;
+	}
+	
+	double area() override {
+		double area = 0;
+		for(int i = 0; i < verticesCount()-1; ++i) {
+			area += (vertices[i].x * vertices[i+1].y) -  (vertices[i+1].x * vertices[i].y);
+		}
+	
+		area += (vertices[verticesCount()-1].x * vertices[0].y) -  (vertices[0].x * vertices[verticesCount()-1].y);
+		area *= 0.5;
+	
+		return abs(area);
+	}
+
+
+};
+
+
+bool Point::operator==(const Point& obj) {
+	return x == obj.x && y == obj.y;
+}
+
+bool Point::operator!=(const Point& obj) {
+	return !(*this == obj);
+}
+
+bool Line::operator==(const Line& obj) {
+	return slope == obj.slope && intercept == obj.intercept;
+}
+
+bool Line::operator!=(const Line& obj) {
+	return !(*this == obj);
+}
+
+>>>>>>> 300b056 (added area/perimeter/isConvex)
 
 
 int main() {
@@ -8,9 +157,12 @@ int main() {
 	Point p3(6, 1);
 	Point p4(3, 10);
 	Point p5(-4, 9);
+<<<<<<< HEAD
 
 	Line ln1(1, 0);
 	Line ln2(1, 0);
+=======
+>>>>>>> 300b056 (added area/perimeter/isConvex)
 
 	Line ln1(1, 0);
 	Line ln2(1, 0);
@@ -27,6 +179,7 @@ int main() {
 	std::cout << "Is convex: " << pl1.isConvex() << std::endl;
 	
 	for(auto p: pl1.getVertices()) {
+<<<<<<< HEAD
 		std::cout << p << '\t' << std::endl;	
 	}
 
@@ -86,4 +239,9 @@ int main() {
 	std::cout << "Triangle and rectangle: " << std::endl;
 	std::cout << (obj1==obj3) << std::endl;
 
+=======
+		std::cout << p.x << ' ' << p.y << '\t' << std::endl;	
+	}
+
+>>>>>>> 300b056 (added area/perimeter/isConvex)
 }
