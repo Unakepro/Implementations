@@ -146,6 +146,80 @@ public:
 
 };
 
+
+class Ellipse: public Shape {
+protected:	
+	double x_c;
+	double y_c;
+
+	double k_a;
+	double k_b;
+
+
+
+public:
+	Ellipse(const Point& f1, const Point& f2, double rsum) {
+		double a;
+		double b;
+		double c;
+
+	
+		x_c = 0.5*(f1.x+f2.x);
+		y_c = 0.5*(f1.y+f2.y);
+
+		a = 0.5*rsum;
+		c = 0.5*sqrt(pow(f2.x-f1.x, 2) + pow(f2.y-f1.y, 2));
+
+
+		b = sqrt(pow(a, 2) - pow(c, 2)); 
+
+		k_a = a;
+		k_b = b;
+	}
+
+	Point center() {
+		return Point(x_c, y_c);
+	}
+
+	std::pair<Point, Point> focuses() {
+		Point f1;
+		Point f2;
+		double c;
+	
+
+		c = sqrt(pow(k_a, 2) - pow(k_b, 2));
+
+		f1.x = x_c + c;
+		f1.y = y_c;
+			
+		f2.x = x_c - c;
+		f2.y = y_c;
+	
+		return std::pair<Point, Point>(f1, f2);	
+	}
+
+	double perimeter() override {
+	
+	}
+	
+	double area() override {
+
+	}
+
+	int verticesCount() override {
+	
+	}
+
+	const std::vector<Point> getVertices() override {
+		
+	}
+
+
+	friend std::ostream& operator<<(std::ostream&, const Ellipse&);
+
+};
+
+
 class Triangle: public Polygon {
 	
 public:
@@ -313,6 +387,16 @@ int main() {
 =======
 		std::cout << p << '\t' << std::endl;	
 	}
+
+	Point fc1(3, 0);
+	Point fc2(-3, 0);
+
+
+	Ellipse el1(fc1, fc2, 10);
+	std::cout << "Elipse center is: " << el1.center() << std::endl;
+	std::cout << "Elipse focues are: " << '\n'; 
+	std::cout << ' ' <<el1.focuses().first  << el1.focuses().second << std::endl; 	
+
 
 	Triangle tr1(p1, p2, p3);
 	std::cout << "Perimeter of trianle is " << tr1.perimeter() << std::endl;
