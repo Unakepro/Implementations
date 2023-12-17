@@ -175,6 +175,7 @@ public:
 
 		k_a = a;
 		k_b = b;
+
 	}
 
 	Point center() {
@@ -198,20 +199,33 @@ public:
 		return std::pair<Point, Point>(f1, f2);	
 	}
 
-	double perimeter() override {
+	double eccentricity() {
+		double c = sqrt(pow(k_a, 2) - pow(k_b, 2));
+		return c/k_a;
+	}
+
+	std::pair<Line, Line> directrices() {
+		Line ln1(1, center().x + -k_a/eccentricity());
+		Line ln2(1, center().x + k_a/eccentricity()); 
+
+		return std::pair<Line, Line>(ln1, ln2);
+	}
 	
+
+	double perimeter() override {
+		return 4 * k_a * std::ellint_2(eccentricity(), M_PI_2);
 	}
 	
 	double area() override {
-
+		return M_PI*k_a*k_b;
 	}
 
 	int verticesCount() override {
-	
+		return 0;
 	}
 
 	const std::vector<Point> getVertices() override {
-		
+		return std::vector<Point>();
 	}
 
 
@@ -396,7 +410,13 @@ int main() {
 	std::cout << "Elipse center is: " << el1.center() << std::endl;
 	std::cout << "Elipse focues are: " << '\n'; 
 	std::cout << ' ' <<el1.focuses().first  << el1.focuses().second << std::endl; 	
-
+	
+	std::cout << "Eccentricity is: " << el1.eccentricity() << std::endl;
+	std::cout << "Elipse directrices are: " << '\n'; 
+	std::cout << el1.directrices().first << el1.directrices().second << std::endl; 	
+	std::cout << "Elipse area is: " << el1.area() << std::endl;	
+	std::cout << "Elipse perimeter is: " << el1.perimeter() << std::endl;	
+	std::cout << "Elipse vertices count is: " << el1.verticesCount() << std::endl;
 
 	Triangle tr1(p1, p2, p3);
 	std::cout << "Perimeter of trianle is " << tr1.perimeter() << std::endl;
