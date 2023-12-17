@@ -234,6 +234,16 @@ public:
 };
 
 
+class Circle: public Ellipse {
+public:
+	Circle(const Point& center, double radius): Ellipse(center, center, radius*2) {}
+
+	double radius() {
+		return k_a;
+	}
+};
+
+
 class Triangle: public Polygon {
 	
 public:
@@ -418,7 +428,22 @@ int main() {
 	std::cout << "Elipse perimeter is: " << el1.perimeter() << std::endl;	
 	std::cout << "Elipse vertices count is: " << el1.verticesCount() << std::endl;
 
+
+
+
+	Point cc(0, 0);
+	Circle cl1(cc, 5);
+
+	std::cout << '\n';	
+	std::cout << "Circle area is: " << cl1.area() << std::endl;
+	std::cout << "Circle perimeter is: " << cl1.perimeter() << std::endl;
+	std::cout << "Circle radiues is: " << cl1.radius() << std::endl;
+
+
+
 	Triangle tr1(p1, p2, p3);
+	
+	std::cout << '\n';
 	std::cout << "Perimeter of trianle is " << tr1.perimeter() << std::endl;
 	std::cout << "Area of triangle is " << tr1.area() << std::endl;
 	std::cout << "Centroid of triangle is " << tr1.centroid() << std::endl;
