@@ -218,9 +218,7 @@ public:
 	
 
 	double perimeter() override {
-
-		//return 4 * k_a * std::ellint_2(eccentricity(), M_PI_2);
-		return 4 * k_a * 0.62;
+		return 4 * k_a * std::ellint_2(eccentricity(), M_PI_2);
 	}
 	
 	double area() override {
