@@ -23,32 +23,42 @@ class Line {
 
 public:
 	Line(double slope = 1, double intercept = 1): slope(slope), intercept(intercept) {}
-	Line(const Point& p1, const Point& p2): slope(calc_slope(p1, p2)), intercept(calc_intercept(slope, p1)) {}
-	Line(double slope, const Point& p): slope(slope), intercept(calc_intercept(slope, p)) {}
+	
+    Line(const Point& p1, const Point& p2) {
+        slope = calc_slope(p1, p2);
+        intercept = calc_intercept(slope, p1);
+    }	
+    
+    
+    Line(double slope, const Point& p): slope(slope) {
+        intercept = calc_intercept(slope, p);
+    }
 
-
-	double neg_reciprocal() {
+	double neg_reciprocal() const {
 		
 
 		return -1/slope;
 	}
 
-	double get_slope() {
-		return slope;
+	double get_slope() const {
+        if(slope > 30000 || slope < -30000) {
+		    throw std::logic_error("To wide ranges of slope");
+        }
+        return slope;
 	}
 	
 
-	bool operator==(const Line&);
-	bool operator!=(const Line&);
+	bool operator==(const Line&) const;
+	bool operator!=(const Line&) const;
 
 private:
 	
-	double calc_slope(const Point& p1, const Point& p2) {
+	double calc_slope(const Point& p1, const Point& p2) const {
 		return (p2.y-p1.y) / (p2.x - p1.x);
 	
 	}
 
-	double calc_intercept(double slope, const Point& p) {
+	double calc_intercept(double slope, const Point& p) const {
 		return p.y-(p.x*slope);	
 	}
 
@@ -60,13 +70,13 @@ private:
 class Shape {
 
 protected:
-	virtual double perimeter() = 0;
-	virtual double area() = 0;
-	virtual int verticesCount() = 0;
+	virtual double perimeter() const = 0;
+	virtual double area() const = 0;
+	virtual int verticesCount() const = 0;
 	virtual const std::vector<Point> getVertices() const = 0;	
 	
 public:
-	bool operator==(const Shape& another) {
+	bool operator==(const Shape& another) const {
 		return getVertices() == another.getVertices();
 	}
 
@@ -85,13 +95,12 @@ public:
 	}
 	
 
-	bool isConvex() {
+	bool isConvex() const {
 		int size = verticesCount();
 		bool sign = true;		
 
 		int vert; 
-
-		
+	
 		vert = ((vertices[size-1].x - vertices[size-2].x) * (vertices[0].y - vertices[size-1].y)) -
 		((vertices[size-1].y - vertices[size-2].y) * (vertices[0].x - vertices[size-1].x)); 
 		
@@ -100,8 +109,7 @@ public:
 		vert = ((vertices[0].x - vertices[size-1].x) * (vertices[1].y - vertices[0].y)) -
 		((vertices[0].y - vertices[size-1].y) * (vertices[1].x - vertices[0].x));
 		
-		for(int i = 0; i < size-2; ++i) {
-		
+		for(int i = 0; i < size-2; ++i) {		
 
 			if(!((vert > 0 && sign == true) || (vert < 0 && sign == false))) {
 				return false;
@@ -109,15 +117,12 @@ public:
 
 			vert = ((vertices[i+1].x - vertices[i].x) * (vertices[i+2].y - vertices[i+1].y)) -
 		 	((vertices[i+1].y - vertices[i].y) * (vertices[i+2].x - vertices[i+1].x));
-	
-		
 		}	
 	
 		return true;
 	}
 
-
-	int verticesCount() override {
+	int verticesCount() const override {
 		return vertices.size();
 	}
 	
@@ -126,7 +131,7 @@ public:
 	}
 
 
-	double perimeter() override {
+	double perimeter() const override {
 		double sum = 0;
 		for(int i = 0; i < verticesCount()-1; ++i) {
 			sum += sqrt((pow(vertices[i+1].x - vertices[i].x, 2)) + (pow(vertices[i+1].y - vertices[i].y, 2)));
@@ -136,7 +141,7 @@ public:
 		return sum;
 	}
 	
-	double area() override {
+	double area() const override {
 		double area = 0;
 		for(int i = 0; i < verticesCount()-1; ++i) {
 			area += (vertices[i].x * vertices[i+1].y) -  (vertices[i+1].x * vertices[i].y);
@@ -183,11 +188,11 @@ public:
 
 	}
 
-	Point center() {
+	Point center() const {
 		return Point(x_c, y_c);
 	}
 
-	std::pair<Point, Point> focuses() {
+	std::pair<Point, Point> focuses() const {
 		Point f1;
 		Point f2;
 		double c;
@@ -204,12 +209,12 @@ public:
 		return std::pair<Point, Point>(f1, f2);	
 	}
 
-	double eccentricity() {
+	double eccentricity() const {
 		double c = sqrt(pow(k_a, 2) - pow(k_b, 2));
 		return c/k_a;
 	}
 
-	std::pair<Line, Line> directrices() {
+	std::pair<Line, Line> directrices() const {
 		Line ln1(1, center().x + -k_a/eccentricity());
 		Line ln2(1, center().x + k_a/eccentricity()); 
 
@@ -217,15 +222,15 @@ public:
 	}
 	
 
-	double perimeter() override {
+	double perimeter() const override {
 		return 4 * k_a * std::ellint_2(eccentricity(), M_PI_2);
-	}
+    }
 	
-	double area() override {
+	double area() const override {
 		return M_PI*k_a*k_b;
 	}
 
-	int verticesCount() override {
+	int verticesCount() const override {
 		return 0;
 	}
 
@@ -252,11 +257,11 @@ class Rectangle: public Polygon {
 public:
 	Rectangle(const Point& a, const Point& c): Polygon({a, Point(c.x, a.y), c, Point(a.x, c.y)}) {}
 
-	Point center() {
+	Point center() const {
 		return Point((vertices[0].x+vertices[2].x)/2, (vertices[0].y+vertices[2].y)/2);
 	}
 
-	std::pair<Line, Line> diagonals() {
+	std::pair<Line, Line> diagonals() const {
 		return std::pair<Line, Line>(Line(vertices[0],vertices[2]), Line(vertices[1], vertices[3]));
 	}
 
@@ -266,13 +271,13 @@ class Square: public Rectangle {
 public:
 	Square(const Point& a, const Point& c): Rectangle(a, c) {}
 
-	Circle circumscribedCircle() {
+	Circle circumscribedCircle() const {
 		double AB = sqrt(pow(vertices[1].x-vertices[0].x, 2) + pow(vertices[1].y-vertices[0].y, 2));
 		return Circle(center(), AB/sqrt(2));
 	}
 
 
-	Circle inscribedCircle() {
+	Circle inscribedCircle() const {
 		double AB = sqrt(pow(vertices[1].x-vertices[0].x, 2) + pow(vertices[1].y-vertices[0].y, 2));
 		return Circle(center(), AB/2); 
 	}
@@ -285,25 +290,25 @@ public:
 
 	Triangle(const Point& p1, const Point& p2, const Point& p3): Polygon{p1, p2, p3} {} 
 	
-	double sideBA() {
+	double sideBA() const {
 		return sqrt(pow(vertices[0].x-vertices[1].x, 2)+pow(vertices[0].y-vertices[1].y, 2));
 	}
 
-	double sideCB() {
+	double sideCB() const {
 		return sqrt(pow(vertices[1].x-vertices[2].x, 2)+pow(vertices[1].y-vertices[2].y, 2));
 	}
 
-	double sideCA() {
+	double sideCA() const {
 		return sqrt(pow(vertices[0].x-vertices[2].x, 2)+pow(vertices[0].y-vertices[2].
 		y, 2));
 	}
 
-	Circle inscribedCircle() {
+	Circle inscribedCircle() const {
 		return Circle(incenter(), area()/(perimeter()*0.5)); 
 	}
 
 
-	Point centroid() {
+	Point centroid() const {
 		double x;
 		double y;
 
@@ -314,7 +319,7 @@ public:
 	}
 
 
-	Point incenter() {
+	Point incenter() const {
 		double BA;
 		double CB;
 		double CA;
@@ -328,7 +333,7 @@ public:
 	}	
 
 
-	Point orthocenter() {
+	Point orthocenter() const {
 		Line side1(vertices[0], vertices[1]);
 		Line side2(vertices[1], vertices[2]);
 
@@ -357,11 +362,11 @@ bool Point::operator!=(const Point& obj) const {
 	return !(*this == obj);
 }
 
-bool Line::operator==(const Line& obj) {
+bool Line::operator==(const Line& obj) const {
 	return slope == obj.slope && intercept == obj.intercept;
 }
 
-bool Line::operator!=(const Line& obj) {
+bool Line::operator!=(const Line& obj) const {
 	return !(*this == obj);
 }
 
