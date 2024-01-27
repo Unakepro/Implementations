@@ -15,6 +15,7 @@ public:
 
     virtual std::vector<Field> getRow(int row) const = 0;
     virtual std::vector<Field> getColumn(int column) const = 0;
+    virtual std::vector<Field> getValues() const = 0;
 
 
     virtual ~IMatrix() {}
@@ -63,11 +64,25 @@ public:
         return copy;
     }
 
+    std::vector<Field> getValues() const override {
+        return values;
+    }
+
+
     BaseMatrix<M, N, Field>& operator-=(const BaseMatrix<M, N, Field>& obj);
     BaseMatrix<M, N, Field>& operator+=(const BaseMatrix<M, N, Field>& obj);
 
     BaseMatrix<M, N, Field> operator-(const BaseMatrix<M, N, Field>& obj);
     BaseMatrix<M, N, Field> operator+(const BaseMatrix<M, N, Field>& obj);
+    
+
+    template <unsigned K, unsigned P, typename OField>
+    bool operator==(const BaseMatrix<K, P, OField>& obj);
+
+
+    template <unsigned K, unsigned P, typename OField>
+    bool operator!=(const BaseMatrix<K, P, OField>& obj);
+
 
 };
 
@@ -77,26 +92,6 @@ class Matrix: public BaseMatrix<M, N, Field> {
 public:
 
     Matrix(std::vector<Field> values): BaseMatrix<M, N, Field>(values) {}
-
-
-
-    // Matrix<M, N, Field>& operator+=(const Matrix<M, N, Field>& obj);
-    // Matrix<M, N, Field>& operator-=(const Matrix<M, N, Field>& obj);
-
-
-
-    // bool operator==(const Matrix& obj);
-
-    // template <unsigned K, unsigned P, typename OField>
-    // bool operator!=(const Matrix<K, P, OField>& obj);
-
-    // Matrix<M, N, Field>& operator[](int row) {
-    //     return values[];
-    // }
-
-    // const Matrix<M, N, Field>& operator[](int i, int j) const { 
-    //     return values[i*j-1];
-    // }
 
 };
 
@@ -114,15 +109,6 @@ public:
     
 };
 
-//     bool operator==(const Matrix& obj);
-
-//     template <unsigned K, unsigned P, typename OField>
-//     bool operator!=(const Matrix<K, P, OField>& obj);
-
-
-//     friend std::ostream& operator<< <>(std::ostream& out, const Matrix& obj);
-// };
-
 
 template<unsigned M, unsigned N, typename Field>
 std::ostream& operator<<(std::ostream& out, const BaseMatrix<M, N, Field>& obj) {
@@ -139,30 +125,18 @@ std::ostream& operator<<(std::ostream& out, const BaseMatrix<M, N, Field>& obj) 
 }
 
 
-// template<unsigned M, unsigned N, typename Field>
-// bool Matrix<M, N, Field>::operator==(const Matrix<M, N, Field>& obj) {
-//     return values==obj.values;
-// }
-
-// template<unsigned M, typename Field>
-// bool Matrix<M, M, Field>::operator==(const Matrix<M, M, Field>& obj) {
-//     return values==obj.values;
-// }
-
-// template<unsigned M, typename Field>
-// template <unsigned K, unsigned P, typename OField>
-// bool Matrix<M, M, Field>::operator!=(const Matrix<K, P, OField>& obj) {     
-//     return M != K || M != P || std::is_same_v<Field, OField> == false || values != obj.values;
-// }
-
-// template<unsigned M, unsigned N, typename Field>
-// template <unsigned K, unsigned P, typename OField>
-// bool Matrix<M, N, Field>::operator!=(const Matrix<K, P, OField>& obj) {     
-//     return M != K || N != P || std::is_same_v<Field, OField> == false || values != obj.values;
-// }
+template<unsigned M, unsigned N, typename Field>
+template <unsigned K, unsigned P, typename OField>
+bool BaseMatrix<M, N, Field>::operator==(const BaseMatrix<K, P, OField>& obj) {
+    return M == K && N == P && std::is_same_v<Field, OField> == true && (*this).getValues() == obj.getValues();
+}
 
 
-
+template<unsigned M, unsigned N, typename Field>
+template <unsigned K, unsigned P, typename OField>
+bool BaseMatrix<M, N, Field>::operator!=(const BaseMatrix<K, P, OField>& obj) {     
+    return !(*this == obj);
+}
 
 
 template<unsigned M, unsigned N, typename Field>
@@ -242,7 +216,7 @@ int main() {
     std::cout << (a+a) << std::endl;
     std::cout << (a-a) << std::endl;
 
-
-    // //std::cout << (a != b) << std::endl;
+    std::cout << (a == a) << std::endl;
+    std::cout << (a != b) << std::endl;
     return 0;
 }
