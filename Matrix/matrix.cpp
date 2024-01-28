@@ -75,6 +75,11 @@ public:
     BaseMatrix<M, N, Field> operator-(const BaseMatrix<M, N, Field>& obj);
     BaseMatrix<M, N, Field> operator+(const BaseMatrix<M, N, Field>& obj);
     
+    BaseMatrix<M, N, Field>& operator*=(int num);
+    BaseMatrix<M, N, Field> operator*(int num);
+
+    template <unsigned K>
+    BaseMatrix<M, K, Field> operator*(const BaseMatrix<N, K, Field>& obj) const;
 
     template <unsigned K, unsigned P, typename OField>
     bool operator==(const BaseMatrix<K, P, OField>& obj);
@@ -83,9 +88,8 @@ public:
     template <unsigned K, unsigned P, typename OField>
     bool operator!=(const BaseMatrix<K, P, OField>& obj);
 
-
+    std::vector<Field> operator[](int j) const;
 };
-
 
 template <unsigned M, unsigned N, typename Field=double>
 class Matrix: public BaseMatrix<M, N, Field> {
@@ -181,11 +185,49 @@ BaseMatrix<M, N, Field> BaseMatrix<M, N, Field>::operator-(const BaseMatrix<M, N
 }
 
 
+template <unsigned M, unsigned N, typename Field>
+BaseMatrix<M, N, Field>& BaseMatrix<M, N, Field>::operator*=(int num) {
+    for(int i = 0; i < values.size(); ++i) {
+        values[i] = values[i] * num;
+    }
+    return *this;
+}
+
+template <unsigned M, unsigned N, typename Field>
+BaseMatrix<M, N, Field> BaseMatrix<M, N, Field>::operator*(int num) {
+    BaseMatrix<M, N, Field> copy = *this;
+    copy *= num;
+    return copy;
+}
+
+template <unsigned M, unsigned N, typename Field>
+std::vector<Field> BaseMatrix<M, N, Field>::operator[](int index) const {
+    return (*this).getRow(index+1);
+}
+
+template <unsigned M, unsigned N, typename Field>
+template <unsigned K>
+BaseMatrix<M, K, Field> BaseMatrix<M, N, Field>::operator*(const BaseMatrix<N, K, Field>& obj) const {
+
+    std::vector<Field> copy_values; 
+    for(int i = 0; i < M; ++i) {
+        for(int k = 0; k < K; ++k) {
+            Field sum = 0;
+            for(int j = 0; j < N; ++j) {
+                sum += (*this).getRow(i+1)[j]*obj.getColumn(k+1)[j];
+
+            }  
+            copy_values.push_back(sum);
+        } 
+    }
+    return BaseMatrix<M, K, Field>(copy_values);
+}
+
 
 int main() {
-    std::vector<double> xs{1, 2, 3, 4, 5};
+    std::vector<double> xs{1, 2, 2, 3, 1, 1};
 
-    Matrix<1, 5> a(xs);
+    Matrix<2, 3> a(xs);
 
     std::cout << a << std::endl;
     for(auto x: a.getRow(1)) {
@@ -199,7 +241,7 @@ int main() {
     }
     std::cout << '\n';
     
-    Matrix<2, 2> b;
+    Matrix<3, 2> b({4, 2, 3, 1, 1, 5});
     
     std::cout << b << std::endl;
 
@@ -218,5 +260,12 @@ int main() {
 
     std::cout << (a == a) << std::endl;
     std::cout << (a != b) << std::endl;
+
+    std::cout << (a * 5) << std::endl;
+
+    std::cout << a << std::endl;
+    std::cout << a[1][2] << std::endl;
+
+    std::cout << (a*b) << std::endl;
     return 0;
 }
