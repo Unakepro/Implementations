@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <type_traits>
+#include <utility>
 
 
 
@@ -9,14 +10,15 @@ class IMatrix {
 public:
     // transponent
     // rank
-    // trace
     // inverted
     // invert
 
     virtual std::vector<Field> getRow(int row) const = 0;
+    virtual typename std::vector<Field>::iterator getRowIter(int row) = 0;
+    virtual Field& getRefValue(int row, int column) = 0;
+
     virtual std::vector<Field> getColumn(int column) const = 0;
     virtual std::vector<Field> getValues() const = 0;
-
 
     virtual ~IMatrix() {}
 };
@@ -24,6 +26,7 @@ public:
 
 template<unsigned M, unsigned N, typename Field=double>
 class BaseMatrix: public IMatrix<M, N, Field> {
+protected:
     std::vector<Field> values;
 
 public:    
@@ -50,6 +53,23 @@ public:
         return copy;     
     }
 
+    typename std::vector<Field>::iterator getRowIter(int row) override {
+        if(row > M || row <= 0) {
+            throw std::logic_error("Invalid row number");
+        } 
+
+        return values.begin()+(row-1)*N;     
+    }
+
+    Field& getRefValue(int row, int column) override {
+        if(column > N || column <= 0) {
+            throw std::logic_error("Invalid column number");
+        }
+
+        return *(getRowIter(row) += (column-1));
+
+    }
+
     std::vector<Field> getColumn(int column) const override {
         if(column > N) {
             throw std::logic_error("Invalid column number");
@@ -60,12 +80,23 @@ public:
         for(int i = column-1; i < values.size(); i += N) {
             copy.push_back(values[i]);
         }        
-
         return copy;
     }
 
     std::vector<Field> getValues() const override {
         return values;
+    }
+
+    BaseMatrix<N, M, Field> transposed() {
+        std::vector<Field> copy;
+        for(int i = 0; i < N; ++i) {
+            for(auto elem: getColumn(i+1)) {
+                copy.push_back(elem);
+            }
+            std::cout << '\n';
+        }
+
+        return BaseMatrix<N, M, Field>(copy);
     }
 
 
@@ -78,6 +109,7 @@ public:
     BaseMatrix<M, N, Field>& operator*=(int num);
     BaseMatrix<M, N, Field> operator*(int num);
 
+    
     template <unsigned K>
     BaseMatrix<M, K, Field> operator*(const BaseMatrix<N, K, Field>& obj) const;
 
@@ -96,7 +128,7 @@ class Matrix: public BaseMatrix<M, N, Field> {
 public:
 
     Matrix(std::vector<Field> values): BaseMatrix<M, N, Field>(values) {}
-
+    
 };
 
 template <unsigned M, typename Field>
@@ -109,7 +141,14 @@ public:
     Matrix(): BaseMatrix<M, M, Field>(std::vector<Field>(M*M, 1)) {}
 
 
-
+    Field trace() {
+        Field sum = Field(0);
+        for(int i = 0; i < M*M; i += M+1) {
+            sum += (*this).values[i];
+    
+        }
+        return sum;
+    }
     
 };
 
@@ -212,7 +251,7 @@ BaseMatrix<M, K, Field> BaseMatrix<M, N, Field>::operator*(const BaseMatrix<N, K
     std::vector<Field> copy_values; 
     for(int i = 0; i < M; ++i) {
         for(int k = 0; k < K; ++k) {
-            Field sum = 0;
+            Field sum = Field(0);
             for(int j = 0; j < N; ++j) {
                 sum += (*this).getRow(i+1)[j]*obj.getColumn(k+1)[j];
 
@@ -267,5 +306,19 @@ int main() {
     std::cout << a[1][2] << std::endl;
 
     std::cout << (a*b) << std::endl;
-    return 0;
+
+    std::vector<double> sq_m{1, 1, 1, 0, 0, 2, 3, 0, 2, 1, 5, 1, 4, 0, 7, -1};
+    Matrix<4, 4> c(sq_m); 
+
+    std::cout << c.trace() << std::endl;
+
+
+    std::vector<int> tr_v{1, 2, 3, 4, 5, 6};
+    Matrix<2, 3, int> d(tr_v);
+    
+    std::cout << d.transposed() << std::endl;
+
+    a.getRefValue(1, 1) = 0;
+
+    std::cout << a << std::endl;
 }
