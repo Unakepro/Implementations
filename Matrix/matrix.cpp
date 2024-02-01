@@ -13,14 +13,15 @@ public:
     // inverted, invert
 
     virtual std::vector<Field> getRow(int row) const = 0;
+    virtual std::vector<Field> getColumn(int column) const = 0;
+
     virtual typename std::vector<Field>::iterator getRowIter(int row) = 0;
     virtual typename std::vector<Field>::const_iterator getConstRowIter(int row) const = 0;
-
+    virtual void swapRows(int f_row, int s_row) = 0;
     
     virtual Field& getRefValue(int row, int column) = 0;
     virtual const Field& getRefValue(int row, int column) const = 0;
 
-    virtual std::vector<Field> getColumn(int column) const = 0;
     virtual std::vector<Field> getValues() const = 0;
 
     virtual ~IMatrix() {}
@@ -43,7 +44,7 @@ public:
     }
 
     std::vector<Field> getRow(int row) const override {
-        if(row > M) {
+        if(row > M || row <= 0) {
             throw std::logic_error("Invalid row number");
         } 
 
@@ -91,7 +92,7 @@ public:
     }
 
     std::vector<Field> getColumn(int column) const override {
-        if(column > N) {
+        if(column > N || column <= 0) {
             throw std::logic_error("Invalid column number");
         }
 
@@ -105,6 +106,20 @@ public:
 
     std::vector<Field> getValues() const override {
         return values;
+    }
+
+    void swapRows(int f_row, int s_row) override {
+        if(f_row > M || f_row <= 0) {
+            throw std::logic_error("first row is not exist");
+        }    
+        if(s_row > M || s_row <= 0) {
+            throw std::logic_error("second row is not exist");
+        }
+
+        for(int i = 0; i < M; ++i) {
+            std::swap(values[(f_row-1)*N+i], values[(s_row-1)*N+i]);
+        }
+
     }
 
     BaseMatrix<N, M, Field> transposed() {
@@ -169,12 +184,49 @@ public:
         return sum;
     }
     
-    Field det() {
-        Field determinant = Field(1);
+    double det() {
+      
+        double determinant = 1.0;
+
+        std::vector<double> copy_values;
+
+        for(Field elem: (*this).values) {
+            copy_values.push_back(static_cast<double>(elem));
+        }
+
+        Matrix<M, M, double> copy(copy_values);
+  
         for(int i = 0; i < M; ++i) {
-            Field maxElem = abs((*this).getRefValue(i+1, i+1));
+
+            Field maxElem = abs(copy.getRefValue(i, i));
             int maxRow = i;
 
+            for(int k = i+1; k < M; ++k) {
+                if(abs(copy.getRefValue(k, i)) > maxElem) {
+
+                    maxElem = abs(copy.getRefValue(k, i));
+                    maxRow = k;
+                }
+            }
+
+            if(maxRow != i) {
+                copy.swapRows(i+1, maxRow+1);
+                determinant = determinant * -1;
+            }
+
+            for(int k = i+1; k < M; ++k) {
+                double c = -copy.getRow(k+1)[i] / copy.getRow(i+1)[i];
+                for(int j = i; j < M; ++j) {
+                    if(i == j) {
+                        copy.getRefValue(k, j) = 0;
+                    }
+                    else {
+                        copy.getRefValue(k, j) += c * copy.getRefValue(i, j);
+                    }
+                }
+            }
+
+            determinant = determinant * copy.getRefValue(i, i);
 
         }
         return determinant;
@@ -303,8 +355,8 @@ Matrix<M, M, Field>& Matrix<M, M, Field>::operator*=(const Matrix<M, M, Field> o
                 sum += (*this).getRefValue(i, j)* obj.getRefValue(j, k);
             }
             copy_values[k] = sum;
-        }
 
+        }
         for(int p = 0; p < M; ++p) {
             (*this).getRefValue(i, p) = copy_values[p];
         }
@@ -379,4 +431,9 @@ int main() {
 
     e *= e;
 
+    std::cout << e << std::endl;
+
+    std::cout << e.det() << std::endl;
+
+    std::cout << e << std::endl;
 }
