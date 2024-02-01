@@ -109,7 +109,7 @@ public:
     BaseMatrix<M, N, Field>& operator*=(int num);
     BaseMatrix<M, N, Field> operator*(int num);
 
-    
+
     template <unsigned K>
     BaseMatrix<M, K, Field> operator*(const BaseMatrix<N, K, Field>& obj) const;
 
@@ -140,7 +140,6 @@ public:
 
     Matrix(): BaseMatrix<M, M, Field>(std::vector<Field>(M*M, 1)) {}
 
-
     Field trace() {
         Field sum = Field(0);
         for(int i = 0; i < M*M; i += M+1) {
@@ -150,6 +149,11 @@ public:
         return sum;
     }
     
+    Matrix<M, M, Field>& operator*=(const Matrix<M, M, Field> obj);
+
+
+    
+
 };
 
 
@@ -262,6 +266,28 @@ BaseMatrix<M, K, Field> BaseMatrix<M, N, Field>::operator*(const BaseMatrix<N, K
     return BaseMatrix<M, K, Field>(copy_values);
 }
 
+template <unsigned M, typename Field>
+Matrix<M, M, Field>& Matrix<M, M, Field>::operator*=(const Matrix<M, M, Field> obj) {
+    for(int i = 0; i < M; ++i) {
+        std::vector<Field> copy_values(M); 
+        for(int k = 0; k < M; ++k) {
+            Field sum = Field(0);
+            for(int j = 0; j < M; ++j) {
+                sum += (*this).getRefValue(i+1, j+1)* obj.getColumn(k+1)[j];
+            }
+            copy_values[k] = sum;
+        }
+
+        for(int p = 0; p < M; ++p) {
+            (*this).getRefValue(i+1, p+1) = copy_values[p];
+        }
+
+    }        
+    return *this;
+}
+
+
+
 
 int main() {
     std::vector<double> xs{1, 2, 2, 3, 1, 1};
@@ -321,4 +347,10 @@ int main() {
     a.getRefValue(1, 1) = 0;
 
     std::cout << a << std::endl;
+
+    Matrix<3, 3, int> e({-1, 2, -5, 3, 4, 1, 0, 1, 2}); 
+
+    e *= e;
+
+    std::cout << e << std::endl;
 }
