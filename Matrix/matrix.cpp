@@ -2,20 +2,23 @@
 #include <vector>
 #include <type_traits>
 #include <utility>
-
+#include <cmath>
 
 
 template<unsigned M, unsigned N, typename Field=double>
 class IMatrix {
 public:
-    // transponent
+    // det
     // rank
-    // inverted
-    // invert
+    // inverted, invert
 
     virtual std::vector<Field> getRow(int row) const = 0;
     virtual typename std::vector<Field>::iterator getRowIter(int row) = 0;
+    virtual typename std::vector<Field>::const_iterator getConstRowIter(int row) const = 0;
+
+    
     virtual Field& getRefValue(int row, int column) = 0;
+    virtual const Field& getRefValue(int row, int column) const = 0;
 
     virtual std::vector<Field> getColumn(int column) const = 0;
     virtual std::vector<Field> getValues() const = 0;
@@ -61,12 +64,29 @@ public:
         return values.begin()+(row-1)*N;     
     }
 
-    Field& getRefValue(int row, int column) override {
-        if(column > N || column <= 0) {
+    typename std::vector<Field>::const_iterator getConstRowIter(int row) const override {
+        if(row > M || row <= 0) {
+            throw std::logic_error("Invalid row number");
+        } 
+
+        return values.begin()+(row-1)*N;     
+    }
+
+    Field& getRefValue(int i, int j) override {
+        if(j >= N || j < 0) {
             throw std::logic_error("Invalid column number");
         }
 
-        return *(getRowIter(row) += (column-1));
+        return *(getRowIter(i+1) += j);
+
+    }
+
+    const Field& getRefValue(int i, int j) const override {
+        if(j >= N || j < 0) {
+            throw std::logic_error("Invalid column number");
+        }
+
+        return *(getConstRowIter(i+1) += j);
 
     }
 
@@ -148,6 +168,18 @@ public:
         }
         return sum;
     }
+    
+    Field det() {
+        Field determinant = Field(1);
+        for(int i = 0; i < M; ++i) {
+            Field maxElem = abs((*this).getRefValue(i+1, i+1));
+            int maxRow = i;
+
+
+        }
+        return determinant;
+    }
+    
     
     Matrix<M, M, Field>& operator*=(const Matrix<M, M, Field> obj);
 
@@ -244,11 +276,6 @@ BaseMatrix<M, N, Field> BaseMatrix<M, N, Field>::operator*(int num) {
 }
 
 template <unsigned M, unsigned N, typename Field>
-std::vector<Field> BaseMatrix<M, N, Field>::operator[](int index) const {
-    return (*this).getRow(index+1);
-}
-
-template <unsigned M, unsigned N, typename Field>
 template <unsigned K>
 BaseMatrix<M, K, Field> BaseMatrix<M, N, Field>::operator*(const BaseMatrix<N, K, Field>& obj) const {
 
@@ -257,7 +284,7 @@ BaseMatrix<M, K, Field> BaseMatrix<M, N, Field>::operator*(const BaseMatrix<N, K
         for(int k = 0; k < K; ++k) {
             Field sum = Field(0);
             for(int j = 0; j < N; ++j) {
-                sum += (*this).getRow(i+1)[j]*obj.getColumn(k+1)[j];
+                sum += (*this).getRefValue(i,j)*obj.getRefValue(j, k);
 
             }  
             copy_values.push_back(sum);
@@ -273,13 +300,13 @@ Matrix<M, M, Field>& Matrix<M, M, Field>::operator*=(const Matrix<M, M, Field> o
         for(int k = 0; k < M; ++k) {
             Field sum = Field(0);
             for(int j = 0; j < M; ++j) {
-                sum += (*this).getRefValue(i+1, j+1)* obj.getColumn(k+1)[j];
+                sum += (*this).getRefValue(i, j)* obj.getRefValue(j, k);
             }
             copy_values[k] = sum;
         }
 
         for(int p = 0; p < M; ++p) {
-            (*this).getRefValue(i+1, p+1) = copy_values[p];
+            (*this).getRefValue(i, p) = copy_values[p];
         }
 
     }        
@@ -329,7 +356,7 @@ int main() {
     std::cout << (a * 5) << std::endl;
 
     std::cout << a << std::endl;
-    std::cout << a[1][2] << std::endl;
+    std::cout << a.getRefValue(0, 0) << std::endl;
 
     std::cout << (a*b) << std::endl;
 
@@ -344,7 +371,7 @@ int main() {
     
     std::cout << d.transposed() << std::endl;
 
-    a.getRefValue(1, 1) = 0;
+    a.getRefValue(0, 0) = 0;
 
     std::cout << a << std::endl;
 
@@ -352,5 +379,4 @@ int main() {
 
     e *= e;
 
-    std::cout << e << std::endl;
 }
