@@ -8,9 +8,6 @@
 template<unsigned M, unsigned N, typename Field=double>
 class IMatrix {
 public:
-    // det
-    // rank
-    // inverted, invert
 
     virtual std::vector<Field> getRow(int row) const = 0;
     virtual std::vector<Field> getColumn(int column) const = 0;
@@ -435,5 +432,4 @@ int main() {
 
     std::cout << e.det() << std::endl;
 
-    std::cout << e << std::endl;
 }
