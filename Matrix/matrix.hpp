@@ -197,13 +197,13 @@ public:
   
         for(int i = 0; i < M; ++i) {
 
-            Field maxElem = abs(copy.getRefValue(i, i));
+            Field maxElem = std::abs(copy.getRefValue(i, i));
             int maxRow = i;
 
             for(int k = i+1; k < M; ++k) {
-                if(abs(copy.getRefValue(k, i)) > maxElem) {
+                if(std::abs(copy.getRefValue(k, i)) > maxElem) {
 
-                    maxElem = abs(copy.getRefValue(k, i));
+                    maxElem = std::abs(copy.getRefValue(k, i));
                     maxRow = k;
                 }
             }
