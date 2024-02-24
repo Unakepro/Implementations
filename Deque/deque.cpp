@@ -8,11 +8,12 @@ template <typename T>
 class Deque {
     T** container = nullptr;
     size_t c_size;
+    size_t elements;
     std::pair<size_t, size_t> start_index;
     std::pair<size_t, size_t> end_index;
 
 public:
-    Deque():  c_size(0), start_index({0, 0}), end_index({0, 0}) {}
+    Deque():  c_size(0), elements(0), start_index({0, 0}), end_index({0, 0}) {}
 
     Deque(size_t size, const T& value = T()) {
 
@@ -21,6 +22,7 @@ public:
         
         container = new T*[num+2];
         c_size = num+2;
+        elements = size;
 
         start_index.first = 1;
         start_index.second = diff/2;
@@ -62,6 +64,8 @@ public:
             
             container = new T*[obj.c_size];
             c_size = obj.c_size;
+            elements = obj.elements;
+
 
             for(size_t i = 0; i < c_size; ++i) {
                 container[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]); 
@@ -125,6 +129,7 @@ public:
             ++end_index.second;
         }
         new(container[end_index.first]+end_index.second) T(value);
+        ++elements;
     }
 
     void push_front(const T& value) {
@@ -165,14 +170,29 @@ public:
             --start_index.second;
         }
         new(container[start_index.first]+start_index.second) T(value);
+        ++elements;
     }
 
     void pop_back() {
-
+        if(size() != 0) {
+            (container[start_index.first]+start_index.second)->~T();
+             
+            end_index.second = (end_index.second - 1) + 32 * (end_index.second == 0);
+            end_index.first -= (end_index.second == 31);
+            --elements;
+        }
+  
     }
 
     void pop_front() {
-        
+        if(size() != 0) {
+            (container[end_index.first]+end_index.second)->~T(); 
+            
+            start_index.second = (start_index.second + 1) % 32;
+            start_index.first += (start_index.second == 0);
+
+            --elements;
+        }
     }
 
 
@@ -216,7 +236,7 @@ public:
 
 
     size_t size() const {
-        return 32 * (end_index.first - start_index.first + 1) - start_index.second - (32 - (end_index.second)-((end_index.first+start_index.first) != 0));
+        return elements;
     }
 
     size_t capacity() const {
@@ -245,9 +265,14 @@ public:
 
 int main() {
     Deque<int> xs(153, 5);
-
+    
+    for(int i = 154; i > 0; --i) {
+        xs.pop_back();
+    }
     xs.print();
-    std::cout << xs.size() << std::endl;
+
+    //xs.print();
+    //std::cout << xs.size() << std::endl;
     std::cout << xs.capacity() << std::endl;
     //std::cout << xxs.size() << std::endl;
 
@@ -256,9 +281,9 @@ int main() {
     //     xs[i] = i+1;
     // }
 
-    Deque<int> xxs = xs;
-    std::cout << xxs.size() << std::endl;
-    std::cout << xxs.capacity() << std::endl;
+    // Deque<int> xxs = xs;
+    // std::cout << xxs.size() << std::endl;
+    // std::cout << xxs.capacity() << std::endl;
 
     //xxs.print();
     // for(int i = 0; i < 153; ++i) {
@@ -286,7 +311,8 @@ int main() {
     }
 
     std::cout << test << std::endl;
-
+    std::cout << xs.size() << std::endl;
+    std::cout << xs.capacity() << std::endl;
     //std::cout << xxs.capacity() << std::endl;
 
     //xs.print_vector();
