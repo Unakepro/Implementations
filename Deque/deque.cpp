@@ -282,12 +282,13 @@ public:
             return *this;
         }
 
-        // common_iterator& operator+=(... value) {
-        //     iter_index.first
-        // }
+        std::conditional_t<isConst, const common_iterator&, common_iterator&> operator+=(int64_t value) {
+            iter_index.first += (iter_index.second + value) / 32;            
+            iter_index.second = (iter_index.second + value) % 32;
+        }
 
         int64_t operator-(const common_iterator& obj) {
-            return (iter_index.first - obj.iter_index.first) + (iter_index.second - obj.iter_index.second);
+            return 32*(iter_index.first - obj.iter_index.first) + (iter_index.second - obj.iter_index.second);
         }
 
         bool operator==(const common_iterator& obj) {
@@ -315,6 +316,7 @@ public:
         }
     };
 
+    
 
 
 
@@ -325,10 +327,10 @@ public:
 int main() {
     Deque<int> xs(153, 5);
     
-    for(int i = 154; i > 0; --i) {
-        xs.pop_back();
-    }
-    xs.print();
+    // for(int i = 154; i > 0; --i) {
+    //     xs.pop_back();
+    // }
+    // xs.print();
 
     //xs.print();
     //std::cout << xs.size() << std::endl;
@@ -350,25 +352,25 @@ int main() {
 
     // }
     
-    std::cout << "\n\n";
+    // std::cout << "\n\n";
 
-    for(int i = 3500; i > 0; --i) {
-        xs.push_front(i);
-    }
+    // for(int i = 3500; i > 0; --i) {
+    //     xs.push_front(i);
+    // }
 
-    for(int i = 36; i > 0; --i) {
-        xs.push_back(1);
-    }
-    xs.push_back(404);
-    xs.print();
+    // for(int i = 36; i > 0; --i) {
+    //     xs.push_back(1);
+    // }
+    // xs.push_back(404);
+    // xs.print();
 
-    int& test = xs[224];
-    std::cout << test << std::endl;
+    // int& test = xs[224];
+    // std::cout << test << std::endl;
 
-    for(int i = 6000; i > 0; --i) {
-        xs.pop_back();
-    }
-    std::cout << test << std::endl;
+    // for(int i = 6000; i > 0; --i) {
+    //     xs.pop_back();
+    // }
+    // std::cout << test << std::endl;
 
     // for(int i = 3500; i > 0; --i) {
     //     xs.push_back(i);
