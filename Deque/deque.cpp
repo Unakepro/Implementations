@@ -97,21 +97,20 @@ public:
             size_t new_size = c_size*2;
             size_t diff = (new_size-c_size)/2;    
             
-            start_index.first = start_index.first + diff;
-            end_index.first = end_index.first + diff;
-
-
             T** tmp_c = new T*[new_size];
 
-            for(size_t i = 0; i < c_size; ++i) {
+            for(size_t i = start_index.first; i <= end_index.first; ++i) {
                 tmp_c[i+diff] = container[i];
             }
 
-            for(size_t i = 0; i < diff; ++i) {
+            start_index.first = start_index.first + diff;
+            end_index.first = end_index.first + diff;
+
+            for(size_t i = 0; i < start_index.first; ++i) {
                 tmp_c[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]);
             }
 
-            for(size_t i = c_size+diff; i < new_size; ++i) {
+            for(size_t i = end_index.first+1; i < new_size; ++i) {
                 tmp_c[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]);
             }
 
@@ -138,25 +137,22 @@ public:
             size_t new_size = c_size*2;
             size_t diff = (new_size-c_size)/2;    
             
-            start_index.first = start_index.first + diff;
-            end_index.first = end_index.first + diff;
-
-
             T** tmp_c = new T*[new_size];
 
             for(size_t i = 0; i < c_size; ++i) {
                 tmp_c[i+diff] = container[i];
             }
 
-            for(size_t i = 0; i < diff; ++i) {
+            start_index.first = start_index.first + diff;
+            end_index.first = end_index.first + diff;
+
+            for(size_t i = 0; i < start_index.first; ++i) {
                 tmp_c[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]);
             }
 
-            for(size_t i = c_size+diff; i < new_size; ++i) {
+            for(size_t i = end_index.first+1; i < new_size; ++i) {
                 tmp_c[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]);
-            }
-
-            delete [] container;            
+            }          
 
             container = tmp_c;
             c_size = new_size; 
@@ -288,6 +284,7 @@ int main() {
     //xxs.print();
     // for(int i = 0; i < 153; ++i) {
     //   std::cout << xs[i] << ' ';
+
     // }
     
     std::cout << "\n\n";
@@ -295,13 +292,13 @@ int main() {
     for(int i = 3500; i > 0; --i) {
         xs.push_front(i);
     }
-    
 
     for(int i = 36; i > 0; --i) {
         xs.push_back(1);
     }
     xs.push_back(404);
-    
+    xs.print();
+
     int& test = xs[224];
 
     std::cout << test << std::endl;
