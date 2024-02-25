@@ -169,9 +169,10 @@ public:
         ++elements;
     }
 
+
     void pop_back() {
         if(size() != 0) {
-            (container[start_index.first]+start_index.second)->~T();
+            (container[end_index.first]+end_index.second)->~T();
              
             end_index.second = (end_index.second - 1) + 32 * (end_index.second == 0);
             end_index.first -= (end_index.second == 31);
@@ -182,7 +183,7 @@ public:
 
     void pop_front() {
         if(size() != 0) {
-            (container[end_index.first]+end_index.second)->~T(); 
+            (container[start_index.first]+start_index.second)->~T(); 
             
             start_index.second = (start_index.second + 1) % 32;
             start_index.first += (start_index.second == 0);
@@ -218,8 +219,6 @@ public:
             }
             std::cout << std::endl;
 
-
-
         }
     }
     
@@ -254,6 +253,70 @@ public:
         return container[((start_index.second+index)/32) + start_index.first][(index+start_index.second)%32];
     }
     
+    template <bool isConst>
+    class common_iterator {
+        std::conditional_t<isConst, const std::pair<size_t, size_t>, std::pair<size_t, size_t>> iter_index;
+    public:
+        common_iterator(size_t container_index, size_t item_index): iter_index({container_index, item_index}) {}
+
+
+        std::conditional_t<isConst, const T&, T&> operator*() {
+            return container[iter_index.first][iter_index.second];
+        }
+
+        std::conditional_t<isConst, const T*, T*> operator->() {
+            return container[iter_index.first]+iter_index.second;
+        }
+
+        std::conditional_t<isConst, const common_iterator&, common_iterator&> operator++() {
+            iter_index.second = (iter_index.second + 1) % 32;
+            iter_index.first += (iter_index.second == 0);
+            
+            return *this;
+        }
+
+        std::conditional_t<isConst, const common_iterator&, common_iterator&> operator--() {
+            iter_index.second = (iter_index.second - 1) + 32 * (iter_index.second == 0);
+            iter_index.first -= (iter_index.second == 31);
+            
+            return *this;
+        }
+
+        // common_iterator& operator+=(... value) {
+        //     iter_index.first
+        // }
+
+        int64_t operator-(const common_iterator& obj) {
+            return (iter_index.first - obj.iter_index.first) + (iter_index.second - obj.iter_index.second);
+        }
+
+        bool operator==(const common_iterator& obj) {
+            return iter_index.first == obj.iter_index.first && iter_index.second == obj.iter_index.second;
+        }
+
+        bool operator!=(const common_iterator& obj) {
+            return !(*this == obj);
+        }
+
+        bool operator>(const common_iterator& obj) {
+            return iter_index.first > obj.iter_index.first || (iter_index.first >= obj.iter_index.first && iter_index.second > obj.iter_index.second);
+        }
+
+        bool operator<(const common_iterator& obj) {
+            return (obj > *this);
+        }
+
+        bool operator>=(const common_iterator& obj) {
+            return (*this > obj) || (*this == obj);
+        }
+
+        bool operator<=(const common_iterator& obj) {
+            return (*this < obj) || (*this == obj);
+        }
+    };
+
+
+
 
 };
 
@@ -300,16 +363,19 @@ int main() {
     xs.print();
 
     int& test = xs[224];
-
     std::cout << test << std::endl;
 
-    for(int i = 3500; i > 0; --i) {
-        xs.push_back(i);
+    for(int i = 6000; i > 0; --i) {
+        xs.pop_back();
     }
-
     std::cout << test << std::endl;
-    std::cout << xs.size() << std::endl;
-    std::cout << xs.capacity() << std::endl;
+
+    // for(int i = 3500; i > 0; --i) {
+    //     xs.push_back(i);
+    // }
+
+    //std::cout << xs.size() << std::endl;
+    //std::cout << xs.capacity() << std::endl;
     //std::cout << xxs.capacity() << std::endl;
 
     //xs.print_vector();
