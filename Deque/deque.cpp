@@ -30,12 +30,13 @@ public:
         end_index.first = num;
         end_index.second = (32-(diff - diff/2))-1;
         
+
         for(size_t i = 0; i < c_size; ++i) {
             container[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]); 
         }
 
 
-        for (size_t j = start_index.second; j < 32 - (32 - end_index.second) * (start_index.first == end_index.first); ++j)
+        for (size_t j = start_index.second; j <= 32 - (32 - end_index.second) * (start_index.first == end_index.first); ++j)
         {
             new(container[start_index.first]+j) T(value);
         }
@@ -255,17 +256,18 @@ public:
     
     template <bool isConst>
     class common_iterator {
-        std::conditional_t<isConst, const std::pair<size_t, size_t>, std::pair<size_t, size_t>> iter_index;
+        std::conditional_t<isConst, const T*, T*> ptr;
+        std::pair<size_t, size_t> iter_index;
     public:
-        common_iterator(size_t container_index, size_t item_index): iter_index({container_index, item_index}) {}
+        common_iterator(T* ptr, size_t container_index, size_t item_index):  ptr(ptr), iter_index({container_index, item_index}) {}
 
 
         std::conditional_t<isConst, const T&, T&> operator*() {
-            return container[iter_index.first][iter_index.second];
+            return ptr[iter_index.second];
         }
 
         std::conditional_t<isConst, const T*, T*> operator->() {
-            return container[iter_index.first]+iter_index.second;
+            return ptr+iter_index.second;
         }
 
         std::conditional_t<isConst, const common_iterator&, common_iterator&> operator++() {
@@ -283,104 +285,100 @@ public:
         }
 
         std::conditional_t<isConst, const common_iterator&, common_iterator&> operator+=(int64_t value) {
-            iter_index.first += (iter_index.second + value) / 32;            
-            iter_index.second = (iter_index.second + value) % 32;
+            if(value >= 0) {
+                iter_index.first += (static_cast<long int>(iter_index.second) + value) / 32;            
+                iter_index.second = (static_cast<long int>(iter_index.second) + value) % 32;
+            }
+            else {
+                iter_index.first -= (static_cast<long int>(iter_index.second) + std::abs(value)) / 32;
+                iter_index.second = (static_cast<long int>(iter_index.second) + value) + 32 * (static_cast<long int>(iter_index.second) < std::abs(value));
+            }
+
+            return *this;
         }
 
         int64_t operator-(const common_iterator& obj) {
             return 32*(iter_index.first - obj.iter_index.first) + (iter_index.second - obj.iter_index.second);
         }
 
-        bool operator==(const common_iterator& obj) {
+        bool operator==(const common_iterator& obj) const {
             return iter_index.first == obj.iter_index.first && iter_index.second == obj.iter_index.second;
         }
 
-        bool operator!=(const common_iterator& obj) {
+        bool operator!=(const common_iterator& obj) const {
             return !(*this == obj);
         }
 
-        bool operator>(const common_iterator& obj) {
+        bool operator>(const common_iterator& obj) const {
             return iter_index.first > obj.iter_index.first || (iter_index.first >= obj.iter_index.first && iter_index.second > obj.iter_index.second);
         }
 
-        bool operator<(const common_iterator& obj) {
+        bool operator<(const common_iterator& obj) const {
             return (obj > *this);
         }
 
-        bool operator>=(const common_iterator& obj) {
+        bool operator>=(const common_iterator& obj) const {
             return (*this > obj) || (*this == obj);
         }
 
-        bool operator<=(const common_iterator& obj) {
+        bool operator<=(const common_iterator& obj) const {
             return (*this < obj) || (*this == obj);
         }
     };
 
-    
 
+    using iterator = common_iterator<false>;
+    using const_iterator = common_iterator<true>;
 
+    iterator begin() {
+        return iterator(*(container+start_index.first), start_index.first, start_index.second);
+    }
+    iterator end() {
+        return iterator(*(container+end_index.first), end_index.first + (((end_index.second + 1) % 32) == 0), (end_index.second + 1) % 32);
+    }
+
+    const_iterator cbegin() const {
+        return const_iterator(*(container+start_index.first), start_index.first, start_index.second);
+    }
+
+    const_iterator cedn() const {
+        return const_iterator(*(container+end_index.first), end_index.first + (((end_index.second + 1) % 32) == 0), (end_index.second + 1) % 32);
+    }
 
 };
 
 
 
 int main() {
-    Deque<int> xs(153, 5);
-    
-    // for(int i = 154; i > 0; --i) {
-    //     xs.pop_back();
-    // }
-    // xs.print();
+    Deque<int> xs(5, 5);
 
-    //xs.print();
-    //std::cout << xs.size() << std::endl;
-    std::cout << xs.capacity() << std::endl;
-    //std::cout << xxs.size() << std::endl;
+    for(int i = 1; i < 101; ++i) {
+        xs.push_back(i);
+    }
 
-    // std::cout << xs.capacity() << std::endl;
-    // for(int i = 0; i < 153; ++i) {
-    //     xs[i] = i+1;
-    // }
+    for(int i = 0; i < 105; ++i) {
+        std::cout << xs[i] << ' ';
+    }
+    std::cout << std::endl;
+    auto it = xs.begin();
+    auto it2 = xs.begin();
+    ++it;
+    it+=4;
+    it+=32;
+    it+=-32;
 
-    // Deque<int> xxs = xs;
-    // std::cout << xxs.size() << std::endl;
-    // std::cout << xxs.capacity() << std::endl;
+    std::cout << (it == it2) << std::endl;
+    std::cout << (it != it2) << std::endl;
+    std::cout << (it > it2) << std::endl;
+    std::cout << (it < it2) << std::endl;
+    std::cout << (it <= it2) << std::endl;
+    std::cout << (it >= it2) << std::endl;
 
-    //xxs.print();
-    // for(int i = 0; i < 153; ++i) {
-    //   std::cout << xs[i] << ' ';
+    std::cout << (it-it2) << std::endl;
 
-    // }
-    
-    // std::cout << "\n\n";
+    auto it3 = xs.cbegin();
+    auto it4 = xs.cedn();
 
-    // for(int i = 3500; i > 0; --i) {
-    //     xs.push_front(i);
-    // }
-
-    // for(int i = 36; i > 0; --i) {
-    //     xs.push_back(1);
-    // }
-    // xs.push_back(404);
-    // xs.print();
-
-    // int& test = xs[224];
-    // std::cout << test << std::endl;
-
-    // for(int i = 6000; i > 0; --i) {
-    //     xs.pop_back();
-    // }
-    // std::cout << test << std::endl;
-
-    // for(int i = 3500; i > 0; --i) {
-    //     xs.push_back(i);
-    // }
-
-    //std::cout << xs.size() << std::endl;
-    //std::cout << xs.capacity() << std::endl;
-    //std::cout << xxs.capacity() << std::endl;
-
-    //xs.print_vector();
-    //xxs.print_vector();
-
+    it3 += 5;
+    std::cout << *(it3) << ' ';
 }
