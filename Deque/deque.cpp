@@ -225,7 +225,7 @@ public:
     
     void print_memory() {
         for(size_t i = 0; i < c_size; ++i) {
-            std::cout << container[i] << ' ';
+            std::cout << container+i << ' ';
         }
         std::cout << std::endl;
     }
@@ -256,18 +256,18 @@ public:
     
     template <bool isConst>
     class common_iterator {
-        std::conditional_t<isConst, const T*, T*> ptr;
+        T** ptr;
         std::pair<size_t, size_t> iter_index;
     public:
-        common_iterator(T* ptr, size_t container_index, size_t item_index):  ptr(ptr), iter_index({container_index, item_index}) {}
+        common_iterator(T** ptr, size_t container_index, size_t item_index):  ptr(ptr), iter_index({container_index, item_index}) {}
 
 
         std::conditional_t<isConst, const T&, T&> operator*() {
-            return ptr[iter_index.second];
+            return ptr[iter_index.first][iter_index.second];
         }
 
         std::conditional_t<isConst, const T*, T*> operator->() {
-            return ptr+iter_index.second;
+            return ptr[iter_index.first]+iter_index.second;
         }
 
         std::conditional_t<isConst, const common_iterator&, common_iterator&> operator++() {
@@ -330,22 +330,34 @@ public:
     using iterator = common_iterator<false>;
     using const_iterator = common_iterator<true>;
 
-    iterator begin() {
-        return iterator(*(container+start_index.first), start_index.first, start_index.second);
+    std::conditional_t<std::is_const_v<T>, const_iterator, iterator> begin() {
+        if constexpr(std::is_const_v<T>) {
+            return const_iterator(container, start_index.first, start_index.second);
+        }
+        else {
+            return iterator(container, start_index.first, start_index.second);
+        }
     }
-    iterator end() {
-        return iterator(*(container+end_index.first), end_index.first + (((end_index.second + 1) % 32) == 0), (end_index.second + 1) % 32);
+    
+    std::conditional_t<std::is_const_v<T>, const_iterator, iterator> end() {
+        if constexpr(std::is_const_v<T>) {
+            return const_iterator(container, end_index.first + (((end_index.second + 1) % 32) == 0), (end_index.second + 1) % 32);
+        }
+        else {
+            return iterator(container, end_index.first + (((end_index.second + 1) % 32) == 0), (end_index.second + 1) % 32);
+        }
     }
 
     const_iterator cbegin() const {
-        return const_iterator(*(container+start_index.first), start_index.first, start_index.second);
+        return const_iterator(container, start_index.first, start_index.second);
     }
 
     const_iterator cedn() const {
-        return const_iterator(*(container+end_index.first), end_index.first + (((end_index.second + 1) % 32) == 0), (end_index.second + 1) % 32);
+        return const_iterator(container, end_index.first + (((end_index.second + 1) % 32) == 0), (end_index.second + 1) % 32);
     }
 
 };
+
 
 
 
@@ -379,6 +391,11 @@ int main() {
     auto it3 = xs.cbegin();
     auto it4 = xs.cedn();
 
-    it3 += 5;
-    std::cout << *(it3) << ' ';
+    while (it3 != it4)
+    {
+        std::cout << (*it3) << ' ';
+        ++it3;
+    }
+    
+
 }
