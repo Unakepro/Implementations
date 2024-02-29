@@ -4,6 +4,24 @@
 #include <cmath>
 #include <cassert>
 
+
+template <typename Iterator>
+class deque_reverse_iterator {
+    Iterator iter;
+public:
+    deque_reverse_iterator(const Iterator& iter): iter(iter) {}
+
+    deque_reverse_iterator<Iterator>& operator++() {
+        --iter;
+        return *this;
+    }
+
+    Iterator base() const {
+        return iter;
+    }
+
+};
+
 template <typename T>
 class Deque {
     T** container = nullptr;
@@ -329,6 +347,9 @@ public:
 
     using iterator = common_iterator<false>;
     using const_iterator = common_iterator<true>;
+    using reverse_iterator = deque_reverse_iterator<iterator>;
+    using const_reverse_iterator = deque_reverse_iterator<const_iterator>;
+
 
     std::conditional_t<std::is_const_v<T>, const_iterator, iterator> begin() {
         if constexpr(std::is_const_v<T>) {
@@ -356,7 +377,37 @@ public:
         return const_iterator(container, end_index.first + (((end_index.second + 1) % 32) == 0), (end_index.second + 1) % 32);
     }
 
+    std::conditional_t<std::is_const_v<T>, const_reverse_iterator, reverse_iterator> rbegin() {
+        if constexpr(std::is_const_v<T>) {
+            return const_reverse_iterator(const_iterator(container, end_index.first, end_index.second));
+        }  
+        else {
+            return reverse_iterator(iterator(container, end_index.first, end_index.second));
+        }
+    }
+
+    std::conditional_t<std::is_const_v<T>, const_reverse_iterator, reverse_iterator> rend() {
+        if constexpr(std::is_const_v<T>) {
+            return const_reverse_iterator(const_iterator(container, start_index.first - ((start_index.second - 1) + 32 * (start_index.second == 0) == 31), (start_index.second - 1) + 32 * (start_index.second == 0)));
+        }  
+        else {
+            return reverse_iterator(iterator(container, start_index.first - ((start_index.second - 1) + 32 * (start_index.second == 0) == 31), (start_index.second - 1) + 32 * (start_index.second == 0)));
+        }
+    }
+
+    const_reverse_iterator crbegin() {
+        return const_reverse_iterator(const_iterator(container, end_index.first, end_index.second));
+    }
+
+    const_reverse_iterator crend() {
+        return const_reverse_iterator(const_iterator(container, start_index.first - ((start_index.second - 1) + 32 * (start_index.second == 0) == 31), (start_index.second - 1) + 32 * (start_index.second == 0)));
+    }
 };
+
+
+
+
+
 
 
 
@@ -396,6 +447,26 @@ int main() {
         std::cout << (*it3) << ' ';
         ++it3;
     }
+
+    std::cout << "\n\n\n";
+
+    auto it5 = xs.crbegin();
+    auto it6 = xs.crend();
+
     
+    while(it5.base() != it6.base()) {
+        std::cout << *(it5.base()) << ' ';
+        ++it5;
+    }
+
+    std::cout << "\n\n\n";
+
+    auto it7 = xs.rbegin();
+    auto it8 = xs.rend();
+
+    while(it7.base() != it8.base()) {
+        std::cout << *(it7.base()) << ' ';
+        ++it7;
+    }
 
 }
