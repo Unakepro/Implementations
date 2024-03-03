@@ -5,6 +5,17 @@
 #include <cassert>
 
 
+void incr_pair(std::pair<size_t, size_t>& obj) {
+    obj.second = (obj.second + 1) % 32;
+    obj.first += (obj.second == 0);
+}
+
+void decr_pair(std::pair<size_t, size_t>& obj) {
+    obj.second = (obj.second - 1) + 32 * (obj.second == 0);
+    obj.first -= (obj.second == 31);
+}
+
+
 template <typename Iterator>
 class deque_reverse_iterator {
     Iterator iter;
@@ -139,13 +150,7 @@ public:
             c_size = new_size;
         }
         
-        if(end_index.second == 31) {
-            ++end_index.first;
-            end_index.second = 0;
-        }
-        else {
-            ++end_index.second;
-        }
+        incr_pair(end_index);
         new(container[end_index.first]+end_index.second) T(value);
         ++elements;
     }
@@ -176,25 +181,19 @@ public:
             container = tmp_c;
             c_size = new_size; 
         }
-        
-        if(start_index.second == 0) {
-            --start_index.first;
-            start_index.second = 31;
-        }
-        else {
-            --start_index.second;
-        }
+
+        decr_pair(start_index);
         new(container[start_index.first]+start_index.second) T(value);
         ++elements;
     }
+
 
 
     void pop_back() {
         if(size() != 0) {
             (container[end_index.first]+end_index.second)->~T();
              
-            end_index.second = (end_index.second - 1) + 32 * (end_index.second == 0);
-            end_index.first -= (end_index.second == 31);
+            decr_pair(end_index);
             --elements;
         }
   
@@ -204,9 +203,7 @@ public:
         if(size() != 0) {
             (container[start_index.first]+start_index.second)->~T(); 
             
-            start_index.second = (start_index.second + 1) % 32;
-            start_index.first += (start_index.second == 0);
-
+            incr_pair(start_index);
             --elements;
         }
     }
@@ -271,7 +268,7 @@ public:
         }
         return container[((start_index.second+index)/32) + start_index.first][(index+start_index.second)%32];
     }
-    
+
     template <bool isConst>
     class common_iterator {
         T** ptr;
@@ -288,16 +285,15 @@ public:
             return ptr[iter_index.first]+iter_index.second;
         }
 
+
         std::conditional_t<isConst, const common_iterator&, common_iterator&> operator++() {
-            iter_index.second = (iter_index.second + 1) % 32;
-            iter_index.first += (iter_index.second == 0);
+            incr_pair(iter_index);
             
             return *this;
         }
 
         std::conditional_t<isConst, const common_iterator&, common_iterator&> operator--() {
-            iter_index.second = (iter_index.second - 1) + 32 * (iter_index.second == 0);
-            iter_index.first -= (iter_index.second == 31);
+            decr_pair(iter_index);
             
             return *this;
         }
@@ -317,6 +313,10 @@ public:
 
         int64_t operator-(const common_iterator& obj) {
             return 32*(iter_index.first - obj.iter_index.first) + (iter_index.second - obj.iter_index.second);
+        }
+
+        std::pair<size_t, size_t> getPair() const {
+            return iter_index;
         }
 
         bool operator==(const common_iterator& obj) const {
@@ -361,11 +361,12 @@ public:
     }
     
     std::conditional_t<std::is_const_v<T>, const_iterator, iterator> end() {
+        std::pair<size_t, size_t> copy_end(end_index);
         if constexpr(std::is_const_v<T>) {
-            return const_iterator(container, end_index.first + (((end_index.second + 1) % 32) == 0), (end_index.second + 1) % 32);
+            return const_iterator(container, copy_end.first, copy_end.second);
         }
         else {
-            return iterator(container, end_index.first + (((end_index.second + 1) % 32) == 0), (end_index.second + 1) % 32);
+            return iterator(container, copy_end.first, copy_end.second);
         }
     }
 
@@ -374,7 +375,9 @@ public:
     }
 
     const_iterator cedn() const {
-        return const_iterator(container, end_index.first + (((end_index.second + 1) % 32) == 0), (end_index.second + 1) % 32);
+        std::pair<size_t, size_t> copy_end(end_index);
+        incr_pair(copy_end);
+        return const_iterator(container, copy_end.first, copy_end.second);
     }
 
     std::conditional_t<std::is_const_v<T>, const_reverse_iterator, reverse_iterator> rbegin() {
@@ -387,11 +390,13 @@ public:
     }
 
     std::conditional_t<std::is_const_v<T>, const_reverse_iterator, reverse_iterator> rend() {
+        std::pair<size_t, size_t> copy_start(start_index);
+        decr_pair(copy_start);
         if constexpr(std::is_const_v<T>) {
-            return const_reverse_iterator(const_iterator(container, start_index.first - ((start_index.second - 1) + 32 * (start_index.second == 0) == 31), (start_index.second - 1) + 32 * (start_index.second == 0)));
+            return const_reverse_iterator(const_iterator(container, copy_start.first, copy_start.second));
         }  
         else {
-            return reverse_iterator(iterator(container, start_index.first - ((start_index.second - 1) + 32 * (start_index.second == 0) == 31), (start_index.second - 1) + 32 * (start_index.second == 0)));
+            return reverse_iterator(iterator(container, copy_start.first, copy_start.second));
         }
     }
 
@@ -400,15 +405,56 @@ public:
     }
 
     const_reverse_iterator crend() {
-        return const_reverse_iterator(const_iterator(container, start_index.first - ((start_index.second - 1) + 32 * (start_index.second == 0) == 31), (start_index.second - 1) + 32 * (start_index.second == 0)));
+        std::pair<size_t, size_t> copy_start(start_index);
+        decr_pair(copy_start);
+        return const_reverse_iterator(const_iterator(container, copy_start.first, copy_start.second));
+    }
+
+    void insert(iterator iter, const T& value) {
+        if(end_index.first == c_size-1 && end_index.second == 31) { 
+            size_t new_size = c_size*2;
+            size_t diff = (new_size-c_size)/2;    
+            
+            T** tmp_c = new T*[new_size];
+
+            for(size_t i = start_index.first; i <= end_index.first; ++i) {
+                tmp_c[i+diff] = container[i];
+            }
+
+            start_index.first = start_index.first + diff;
+            end_index.first = end_index.first + diff;
+
+            for(size_t i = 0; i < start_index.first; ++i) {
+                tmp_c[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]);
+            }
+
+            for(size_t i = end_index.first+1; i < new_size; ++i) {
+                tmp_c[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]);
+            }
+
+            delete [] container;            
+
+            container = tmp_c;
+            c_size = new_size;
+
+        }
+
+        T tmp_value = *iter;
+        T hold_value;
+
+        *iter = value;
+
+        while(iter != end()) {
+            ++iter;
+            hold_value = *iter;          
+            *iter = tmp_value;
+            tmp_value = hold_value;
+        }
+        *(++iter) = tmp_value;
+
+        incr_pair(end_index);  
     }
 };
-
-
-
-
-
-
 
 
 
@@ -468,5 +514,13 @@ int main() {
         std::cout << *(it7.base()) << ' ';
         ++it7;
     }
+    std::cout << "\n\n\n";
 
+    auto it9 = xs.begin();
+    it9+= 15;
+    for(int i = 0; i < 11; ++i) {
+        xs.insert(it9, 404);
+    }
+    //std::cout << '\n' << xs.size() << std::endl;
+    xs.print();
 }
