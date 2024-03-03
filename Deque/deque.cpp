@@ -452,7 +452,30 @@ public:
         }
         *(++iter) = tmp_value;
 
+        ++elements;
         incr_pair(end_index);  
+    }
+
+    void erase(iterator iter) {
+        if(size() == 0 || end_index.first < iter.getPair().first || (end_index.first == iter.getPair().first && end_index.second < iter.getPair().second)) {
+            throw std::logic_error("Erase on non-existing element");
+        }
+        iter->~T();
+        
+        auto end_iter = iterator(container, end_index.first, end_index.second);
+
+        T tmp_value = *end_iter;
+        T hold_value;
+
+        while(end_iter != iter) {
+            --end_iter;
+            hold_value = *end_iter;
+            *end_iter = tmp_value;
+            tmp_value = hold_value;
+        }
+
+        decr_pair(end_index);
+        --elements;
     }
 };
 
@@ -517,10 +540,18 @@ int main() {
     std::cout << "\n\n\n";
 
     auto it9 = xs.begin();
-    it9+= 15;
-    for(int i = 0; i < 11; ++i) {
-        xs.insert(it9, 404);
+    //it9+= 15;
+
+
+    xs.insert(it9, 404);
+    xs.print();
+    
+    std::cout << "\n\n\n";
+
+    for(int i = 0; i < 107; ++i) {
+      xs.erase(it9);
     }
+    //std::cout << *it9 << ' ';
     //std::cout << '\n' << xs.size() << std::endl;
     xs.print();
 }
