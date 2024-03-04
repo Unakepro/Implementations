@@ -120,71 +120,84 @@ public:
         }    
     }
 
-    void push_back(const T& value) {
-        // doesn't work with push when zero elem
-        if(end_index.first == c_size-1 && end_index.second == 31) {
-            
-            size_t new_size = c_size*2;
-            size_t diff = (new_size-c_size)/2;    
-            
-            T** tmp_c = new T*[new_size];
-
-            for(size_t i = start_index.first; i <= end_index.first; ++i) {
-                tmp_c[i+diff] = container[i];
-            }
-
-            start_index.first = start_index.first + diff;
-            end_index.first = end_index.first + diff;
-
-            for(size_t i = 0; i < start_index.first; ++i) {
-                tmp_c[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]);
-            }
-
-            for(size_t i = end_index.first+1; i < new_size; ++i) {
-                tmp_c[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]);
-            }
-
-            delete [] container;            
-
-            container = tmp_c;
-            c_size = new_size;
-        }
+    
+    void resize_deque() {
+        size_t new_size = c_size*2;
+        size_t diff = (new_size-c_size)/2;    
         
-        incr_pair(end_index);
-        new(container[end_index.first]+end_index.second) T(value);
-        ++elements;
+        T** tmp_c = new T*[new_size];
+
+        for(size_t i = start_index.first; i <= end_index.first; ++i) {
+            tmp_c[i+diff] = container[i];
+        }
+
+        start_index.first = start_index.first + diff;
+        end_index.first = end_index.first + diff;
+
+        for(size_t i = 0; i < start_index.first; ++i) {
+            tmp_c[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]);
+        }
+
+        for(size_t i = end_index.first+1; i < new_size; ++i) {
+            tmp_c[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]);
+        }
+
+        delete [] container;            
+
+        container = tmp_c;
+        c_size = new_size;
+    }
+
+
+    void push_back(const T& value) {
+        if(c_size == 0) {
+            c_size = 3;
+            container = new T*[c_size];
+            
+            for(size_t i = 0; i < c_size; ++i) {
+                container[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]); 
+            }
+            
+            new(container[end_index.first]+end_index.second) T(value);
+            ++elements;
+        }
+        else {
+            if(end_index.first == c_size-1 && end_index.second == 31) {
+                resize_deque();
+            }
+            
+            incr_pair(end_index);
+            new(container[end_index.first]+end_index.second) T(value);
+            ++elements;
+        }
     }
 
     void push_front(const T& value) {
-        if(start_index.first == 0 && start_index.second == 0) {
+        if(c_size == 0) {
+            c_size = 3;
+            container = new T*[c_size];
             
-            size_t new_size = c_size*2;
-            size_t diff = (new_size-c_size)/2;    
-            
-            T** tmp_c = new T*[new_size];
+            start_index.first = 1;
+            start_index.second = 15;
 
+            end_index.first = 1;
+            end_index.second = 15;
             for(size_t i = 0; i < c_size; ++i) {
-                tmp_c[i+diff] = container[i];
+                container[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]); 
             }
-
-            start_index.first = start_index.first + diff;
-            end_index.first = end_index.first + diff;
-
-            for(size_t i = 0; i < start_index.first; ++i) {
-                tmp_c[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]);
-            }
-
-            for(size_t i = end_index.first+1; i < new_size; ++i) {
-                tmp_c[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]);
-            }          
-
-            container = tmp_c;
-            c_size = new_size; 
+            
+            new(container[start_index.first]+start_index.second) T(value);
+            ++elements;
         }
+        else {
+            if(start_index.first == 0 && start_index.second == 0) {
+                resize_deque();
+            }
 
-        decr_pair(start_index);
-        new(container[start_index.first]+start_index.second) T(value);
-        ++elements;
+            decr_pair(start_index);
+            new(container[start_index.first]+start_index.second) T(value);
+            ++elements;
+        }
     }
 
 
@@ -209,7 +222,7 @@ public:
     }
 
 
-
+    //delte
     void print() {
 
 
@@ -405,31 +418,7 @@ public:
 
     void insert(iterator iter, const T& value) {
         if(end_index.first == c_size-1 && end_index.second == 31) { 
-            size_t new_size = c_size*2;
-            size_t diff = (new_size-c_size)/2;    
-            
-            T** tmp_c = new T*[new_size];
-
-            for(size_t i = start_index.first; i <= end_index.first; ++i) {
-                tmp_c[i+diff] = container[i];
-            }
-
-            start_index.first = start_index.first + diff;
-            end_index.first = end_index.first + diff;
-
-            for(size_t i = 0; i < start_index.first; ++i) {
-                tmp_c[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]);
-            }
-
-            for(size_t i = end_index.first+1; i < new_size; ++i) {
-                tmp_c[i] = reinterpret_cast<T*>(new int8_t[32*sizeof(T)]);
-            }
-
-            delete [] container;            
-
-            container = tmp_c;
-            c_size = new_size;
-
+            resize_deque();
         }
 
         T tmp_value = *iter;

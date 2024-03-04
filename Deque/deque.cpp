@@ -78,4 +78,12 @@ int main() {
       xs.erase(it9);
     }
     xs.print();
+
+    Deque<int> xxs;
+
+    for(int i = 0; i < 100; ++i) 
+        xxs.push_front(i);
+    
+    xxs.print();
+
 }
