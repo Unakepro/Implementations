@@ -124,7 +124,7 @@ public:
     void resize_deque() {
         size_t new_size = c_size*2;
         size_t diff = (new_size-c_size)/2;    
-        
+
         T** tmp_c = new T*[new_size];
 
         for(size_t i = start_index.first; i <= end_index.first; ++i) {
@@ -220,37 +220,6 @@ public:
             --elements;
         }
     }
-
-
-    //delte
-    void print() {
-
-
-        if(start_index.first == end_index.first) {
-            for(size_t j = start_index.second; j <= end_index.second; ++j) {
-                std::cout << container[start_index.first][j] << ' ';
-            }
-        }
-        else {
-            for(size_t j = start_index.second; j < 32; ++j) {
-                std::cout << container[start_index.first][j] << ' ';
-            }
-            std::cout << std::endl;
-            
-            for(size_t i = start_index.first+1; i < end_index.first; ++i) {
-                for(size_t j = 0; j < 32; ++j) {
-                    std::cout << container[i][j] << ' ';
-                }
-                std::cout << std::endl;
-            }
-            for(size_t j = 0; j <= end_index.second; ++j) {
-                std::cout << container[end_index.first][j] << ' ';
-            }
-            std::cout << std::endl;
-
-        }
-    }
-
 
     size_t size() const {
         return elements;
@@ -368,6 +337,8 @@ public:
     
     std::conditional_t<std::is_const_v<T>, const_iterator, iterator> end() {
         std::pair<size_t, size_t> copy_end(end_index);
+        incr_pair(copy_end);
+
         if constexpr(std::is_const_v<T>) {
             return const_iterator(container, copy_end.first, copy_end.second);
         }
@@ -458,5 +429,21 @@ public:
 
         decr_pair(end_index);
         --elements;
+    }
+
+    ~Deque() {
+        auto iter_start = (*this).begin();
+        auto iter_end = (*this).end();
+
+        while(iter_start != iter_end) {
+            iter_start->~T();
+            ++iter_start;
+        }
+        
+        for(size_t i = 0; i < c_size; ++i) {
+            delete [] reinterpret_cast<int8_t*>(container[i]);
+        }
+        delete [] container;
+
     }
 };

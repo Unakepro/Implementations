@@ -6,6 +6,22 @@
 #include "deque.hpp"
 
 
+class Test {
+    double x;
+
+public:
+    Test(double x): x(x) {}
+
+    ~Test() {
+        std::cout << " object destructed "; 
+    }
+
+    friend std::ostream& operator<<(std::ostream& out, const Test& obj) {
+        out << obj.x;
+        return out;
+    }
+};
+
 
 
 int main() {
@@ -18,6 +34,7 @@ int main() {
     for(int i = 0; i < 105; ++i) {
         std::cout << xs[i] << ' ';
     }
+  
     std::cout << std::endl;
     auto it = xs.begin();
     auto it2 = xs.begin();
@@ -70,20 +87,23 @@ int main() {
 
 
     xs.insert(it9, 404);
-    xs.print();
-    
+
     std::cout << "\n\n\n";
 
     for(int i = 0; i < 106; ++i) {
       xs.erase(it9);
     }
-    xs.print();
 
     Deque<int> xxs;
 
-    for(int i = 0; i < 100; ++i) 
+    for(int i = 0; i < 100; ++i) {
         xxs.push_front(i);
-    
-    xxs.print();
+    }
+
+    Deque<Test> xxy;
+    for(int i = 0; i < 100; ++i) {
+        xxy.push_back(Test(5.0));
+    }
+
 
 }
