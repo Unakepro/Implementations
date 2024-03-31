@@ -2,7 +2,7 @@
 
 template <typename T>
 struct remove_reference {
-	using type  = T;
+	using type = T;
 };
 
 template <typename T>
