@@ -1,3 +1,6 @@
+#ifndef DEQUE
+#define DEQUE
+
 #include <iostream>
 #include <vector>
 #include <array>
@@ -447,3 +450,5 @@ public:
 
     }
 };
+
+#endif
